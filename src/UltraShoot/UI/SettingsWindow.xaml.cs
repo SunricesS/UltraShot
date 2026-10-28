@@ -25,10 +25,62 @@ public partial class SettingsWindow : Window
         UpdateHotkeyTextBoxDisplay();
 
         SaveFolderTextBox.Text = settings.SaveDirectory;
+
+        // Image Format
+        FormatComboBox.SelectedIndex = settings.ImageFormat.ToUpperInvariant() switch
+        {
+            "JPEG" or "JPG" => 1,
+            "BMP" => 2,
+            _ => 0
+        };
+
+        // JPEG Quality
+        int quality = Math.Clamp(settings.JpegQuality, 10, 100);
+        QualitySlider.Value = quality;
+        if (QualityPercentText != null)
+        {
+            QualityPercentText.Text = $"%{quality}";
+        }
+
+        UpdateQualityControlState();
+
         OpenFlyoutCheckBox.IsChecked = settings.OpenFlyoutAfterCapture;
         CopyClipboardCheckBox.IsChecked = settings.CopyImageToClipboard;
         PlaySoundCheckBox.IsChecked = settings.PlaySound;
         StartWithWindowsCheckBox.IsChecked = settings.StartWithWindows;
+    }
+
+    private void FormatComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        UpdateQualityControlState();
+    }
+
+    private void QualitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (QualityPercentText != null)
+        {
+            QualityPercentText.Text = $"%{(int)QualitySlider.Value}";
+        }
+    }
+
+    private void UpdateQualityControlState()
+    {
+        if (FormatComboBox == null || QualitySlider == null || QualityHintText == null) return;
+
+        bool isJpeg = FormatComboBox.SelectedIndex == 1; // JPEG
+        QualitySlider.IsEnabled = isJpeg;
+        QualitySlider.Opacity = isJpeg ? 1.0 : 0.45;
+
+        if (isJpeg)
+        {
+            QualityHintText.Text = "* %90 kalite gözle görülür kayıp olmadan dosya boyutunu ciddi oranda düşürür.";
+            QualityHintText.Foreground = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#888888")!;
+        }
+        else
+        {
+            QualityHintText.Text = "* Bu ayar yalnızca JPEG formatı seçildiğinde etkilidir. PNG ve BMP kayıpsız formatlardır.";
+            QualityHintText.Foreground = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#666666")!;
+        }
     }
 
     private void UpdateHotkeyTextBoxDisplay()
@@ -120,6 +172,17 @@ public partial class SettingsWindow : Window
         settings.CopyImageToClipboard = CopyClipboardCheckBox.IsChecked ?? true;
         settings.PlaySound = PlaySoundCheckBox.IsChecked ?? false;
         settings.StartWithWindows = StartWithWindowsCheckBox.IsChecked ?? false;
+
+        if (FormatComboBox.SelectedItem is System.Windows.Controls.ComboBoxItem item && item.Tag is string tag)
+        {
+            settings.ImageFormat = tag;
+        }
+        else
+        {
+            settings.ImageFormat = "PNG";
+        }
+
+        settings.JpegQuality = (int)QualitySlider.Value;
 
         SettingsManager.Save();
         SettingsSaved?.Invoke();

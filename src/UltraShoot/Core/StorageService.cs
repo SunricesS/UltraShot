@@ -15,8 +15,9 @@ public static class StorageService
             Directory.CreateDirectory(folder);
         }
 
+        var ext = SettingsManager.Current.GetFileExtension();
         var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-        var fileName = $"UltraShoot_{timestamp}.png";
+        var fileName = $"UltraShoot_{timestamp}{ext}";
         return Path.Combine(folder, fileName);
     }
 
@@ -24,9 +25,15 @@ public static class StorageService
     {
         var filePath = GenerateUniqueFilePath();
 
-        // Encode to PNG memory stream, then write async
+        // Encode according to configured image format and quality
         using var memoryStream = new MemoryStream();
-        var encoder = new PngBitmapEncoder();
+        BitmapEncoder encoder = SettingsManager.Current.ImageFormat.ToUpperInvariant() switch
+        {
+            "JPEG" or "JPG" => new JpegBitmapEncoder { QualityLevel = Math.Clamp(SettingsManager.Current.JpegQuality, 10, 100) },
+            "BMP" => new BmpBitmapEncoder(),
+            _ => new PngBitmapEncoder()
+        };
+
         encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
         encoder.Save(memoryStream);
         var bytes = memoryStream.ToArray();
@@ -46,7 +53,7 @@ public static class StorageService
         var ext = Path.GetExtension(destinationPath).ToLowerInvariant();
         BitmapEncoder encoder = ext switch
         {
-            ".jpg" or ".jpeg" => new JpegBitmapEncoder { QualityLevel = 95 },
+            ".jpg" or ".jpeg" => new JpegBitmapEncoder { QualityLevel = Math.Clamp(SettingsManager.Current.JpegQuality, 10, 100) },
             ".bmp" => new BmpBitmapEncoder(),
             _ => new PngBitmapEncoder()
         };
@@ -70,6 +77,8 @@ public static class StorageService
             var files = new DirectoryInfo(folder)
                 .GetFiles("*.png")
                 .Concat(new DirectoryInfo(folder).GetFiles("*.jpg"))
+                .Concat(new DirectoryInfo(folder).GetFiles("*.jpeg"))
+                .Concat(new DirectoryInfo(folder).GetFiles("*.bmp"))
                 .OrderByDescending(f => f.CreationTime)
                 .Take(maxCount);
 

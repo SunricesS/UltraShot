@@ -17,6 +17,16 @@ public class AppSettings
     public bool AutoSaveScreenshot { get; set; } = true;
     public bool StartWithWindows { get; set; } = false;
 
+    public string ImageFormat { get; set; } = "PNG";
+    public int JpegQuality { get; set; } = 90;
+
+    public string GetFileExtension() => ImageFormat.ToUpperInvariant() switch
+    {
+        "JPEG" or "JPG" => ".jpg",
+        "BMP" => ".bmp",
+        _ => ".png"
+    };
+
     // Helper to format hotkey display string (e.g. "Ctrl + Shift + S" or "PrintScreen")
     public string GetHotkeyDisplayString()
     {

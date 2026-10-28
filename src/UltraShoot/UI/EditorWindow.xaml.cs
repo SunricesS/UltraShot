@@ -381,11 +381,12 @@ public partial class EditorWindow : Window
 
     private void SaveAs_Click(object sender, RoutedEventArgs e)
     {
+        var ext = SettingsManager.Current.GetFileExtension();
         var sfd = new SaveFileDialog
         {
             Filter = "PNG Resmi (*.png)|*.png|JPEG Resmi (*.jpg)|*.jpg|Bitmap Resmi (*.bmp)|*.bmp",
-            FileName = !string.IsNullOrEmpty(_filePath) ? System.IO.Path.GetFileName(_filePath) : "UltraShoot_Screenshot.png",
-            DefaultExt = ".png"
+            FileName = !string.IsNullOrEmpty(_filePath) ? System.IO.Path.GetFileName(_filePath) : $"UltraShoot_Screenshot{ext}",
+            DefaultExt = ext
         };
 
         if (sfd.ShowDialog() == true)
