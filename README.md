@@ -1,6 +1,6 @@
 <div align="center">
 
-#  UltraShoot
+#  UltraShot
 
 **ultra-lightweight Windows screenshot tool & annotation editor.**  
 
