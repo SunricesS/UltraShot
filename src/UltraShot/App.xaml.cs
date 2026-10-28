@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Media;
 using System.Threading;
 using System.Windows;
@@ -106,10 +106,13 @@ public partial class App : Application
                 SystemSounds.Asterisk.Play();
             }
 
-            string savedPath = string.Empty;
-            if (SettingsManager.Current.AutoSaveScreenshot)
+            if (!SettingsManager.Current.SaveOnlyToClipboard && SettingsManager.Current.AutoSaveScreenshot)
             {
-                savedPath = await StorageService.SaveBitmapAsync(bitmap);
+                await StorageService.SaveBitmapAsync(bitmap);
+            }
+            else if (!SettingsManager.Current.OpenFlyoutAfterCapture)
+            {
+                _trayManager?.ShowNotification("UltraShot", "Ekran görüntüsü panoya kopyalandı (Geçici mod).");
             }
 
             if (SettingsManager.Current.OpenFlyoutAfterCapture)

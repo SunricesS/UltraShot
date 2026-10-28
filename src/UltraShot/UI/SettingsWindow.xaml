@@ -1,8 +1,8 @@
-﻿<Window x:Class="UltraShot.UI.SettingsWindow"
+<Window x:Class="UltraShot.UI.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="UltraShot Ayarları"
-        Width="460" Height="540"
+        Width="460" Height="570"
         WindowStartupLocation="CenterScreen"
         Background="#1E1E1E"
         Foreground="#EEEEEE"
@@ -259,6 +259,11 @@
 
                 <!-- Checkboxes -->
                 <TextBlock Text="Davranışlar" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
+                <CheckBox x:Name="SaveOnlyToClipboardCheckBox" Content="Yalnızca panoya kaydet (Geçici mod: Diske kaydetmez)" 
+                          Checked="SaveOnlyToClipboard_Changed" Unchecked="SaveOnlyToClipboard_Changed"/>
+                <TextBlock x:Name="TemporaryModeHintText" 
+                           Text="* Geçici modda aldığınız ekran alıntıları diskinizde yer kaplamaz, doğrudan panoya kopyalanır." 
+                           FontSize="11" Foreground="#00D2FF" TextWrapping="Wrap" Margin="20,-2,0,8" Visibility="Collapsed"/>
                 <CheckBox x:Name="OpenFlyoutCheckBox" Content="Ekran görüntüsü alındığında son çekilenler panelini aç"/>
                 <CheckBox x:Name="CopyClipboardCheckBox" Content="Alanı seçtiğim anda panoya kopyala"/>
                 <CheckBox x:Name="PlaySoundCheckBox" Content="Çekim sonrası deklanşör sesi çal"/>

@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Windows.Forms;
 using UltraShot.Core;
 
@@ -10,6 +10,7 @@ public class TrayIconManager : IDisposable
     private readonly ToolStripMenuItem _captureMenuItem;
     private readonly ToolStripMenuItem _openFolderMenuItem;
     private readonly ToolStripMenuItem _settingsMenuItem;
+    private readonly ToolStripMenuItem _temporaryModeMenuItem;
     private readonly ToolStripMenuItem _recentMenuItem;
     private readonly ToolStripMenuItem _exitMenuItem;
 
@@ -17,6 +18,7 @@ public class TrayIconManager : IDisposable
     public event Action? RecentScreenshotsTriggered;
     public event Action? OpenFolderTriggered;
     public event Action? SettingsTriggered;
+    public event Action<bool>? TemporaryModeToggled;
     public event Action? ExitTriggered;
 
     public TrayIconManager()
@@ -26,6 +28,18 @@ public class TrayIconManager : IDisposable
         _captureMenuItem = new ToolStripMenuItem("📷 Ekran Görüntüsü Al", null, (s, e) => CaptureTriggered?.Invoke());
         _recentMenuItem = new ToolStripMenuItem("🖼️ Son Ekran Görüntüleri", null, (s, e) => RecentScreenshotsTriggered?.Invoke());
         _openFolderMenuItem = new ToolStripMenuItem("📁 Ekran Görüntüleri Klasörünü Aç", null, (s, e) => OpenFolderTriggered?.Invoke());
+        
+        _temporaryModeMenuItem = new ToolStripMenuItem("📋 Yalnızca Panoya Kaydet (Geçici)", null, (s, e) =>
+        {
+            if (s is ToolStripMenuItem mi)
+            {
+                SettingsManager.Current.SaveOnlyToClipboard = mi.Checked;
+                SettingsManager.Save();
+                TemporaryModeToggled?.Invoke(mi.Checked);
+            }
+        });
+        _temporaryModeMenuItem.CheckOnClick = true;
+
         _settingsMenuItem = new ToolStripMenuItem("⚙️ Kısayol ve Ayarlar", null, (s, e) => SettingsTriggered?.Invoke());
         _exitMenuItem = new ToolStripMenuItem("❌ Çıkış", null, (s, e) => ExitTriggered?.Invoke());
 
@@ -33,6 +47,7 @@ public class TrayIconManager : IDisposable
         contextMenu.Items.Add(_recentMenuItem);
         contextMenu.Items.Add(_openFolderMenuItem);
         contextMenu.Items.Add(new ToolStripSeparator());
+        contextMenu.Items.Add(_temporaryModeMenuItem);
         contextMenu.Items.Add(_settingsMenuItem);
         contextMenu.Items.Add(new ToolStripSeparator());
         contextMenu.Items.Add(_exitMenuItem);
@@ -61,6 +76,16 @@ public class TrayIconManager : IDisposable
         var hotkeyStr = SettingsManager.Current.GetHotkeyDisplayString();
         _captureMenuItem.Text = $"📷 Ekran Görüntüsü Al ({hotkeyStr})";
         _notifyIcon.Text = $"UltraShot ({hotkeyStr})";
+        _temporaryModeMenuItem.Checked = SettingsManager.Current.SaveOnlyToClipboard;
+    }
+
+    public void ShowNotification(string title, string text)
+    {
+        try
+        {
+            _notifyIcon.ShowBalloonTip(1500, title, text, ToolTipIcon.Info);
+        }
+        catch { }
     }
 
     private static Icon CreateAppIcon()

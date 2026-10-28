@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 
 namespace UltraShot.Models;
@@ -15,6 +15,11 @@ public class AppSettings
     public bool OpenFlyoutAfterCapture { get; set; } = true;
     public bool CopyImageToClipboard { get; set; } = true;
     public bool AutoSaveScreenshot { get; set; } = true;
+    public bool SaveOnlyToClipboard
+    {
+        get => !AutoSaveScreenshot;
+        set => AutoSaveScreenshot = !value;
+    }
     public bool StartWithWindows { get; set; } = false;
 
     public string ImageFormat { get; set; } = "PNG";

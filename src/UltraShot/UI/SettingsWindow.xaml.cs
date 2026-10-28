@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 using UltraShot.Core;
 
@@ -44,10 +44,28 @@ public partial class SettingsWindow : Window
 
         UpdateQualityControlState();
 
+        SaveOnlyToClipboardCheckBox.IsChecked = settings.SaveOnlyToClipboard;
+        UpdateTemporaryModeHintState();
+
         OpenFlyoutCheckBox.IsChecked = settings.OpenFlyoutAfterCapture;
         CopyClipboardCheckBox.IsChecked = settings.CopyImageToClipboard;
         PlaySoundCheckBox.IsChecked = settings.PlaySound;
         StartWithWindowsCheckBox.IsChecked = settings.StartWithWindows;
+    }
+
+    private void SaveOnlyToClipboard_Changed(object sender, RoutedEventArgs e)
+    {
+        UpdateTemporaryModeHintState();
+    }
+
+    private void UpdateTemporaryModeHintState()
+    {
+        if (TemporaryModeHintText != null && SaveOnlyToClipboardCheckBox != null)
+        {
+            TemporaryModeHintText.Visibility = (SaveOnlyToClipboardCheckBox.IsChecked == true) 
+                ? Visibility.Visible 
+                : Visibility.Collapsed;
+        }
     }
 
     private void FormatComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -168,6 +186,7 @@ public partial class SettingsWindow : Window
         settings.HotkeyModifiers = _currentModifiers;
         settings.HotkeyKey = _currentKey;
         settings.SaveDirectory = SaveFolderTextBox.Text;
+        settings.SaveOnlyToClipboard = SaveOnlyToClipboardCheckBox.IsChecked ?? false;
         settings.OpenFlyoutAfterCapture = OpenFlyoutCheckBox.IsChecked ?? true;
         settings.CopyImageToClipboard = CopyClipboardCheckBox.IsChecked ?? true;
         settings.PlaySound = PlaySoundCheckBox.IsChecked ?? false;
