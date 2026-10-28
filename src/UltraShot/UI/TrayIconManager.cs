@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using UltraShot.Core;
 
@@ -89,6 +91,45 @@ public class TrayIconManager : IDisposable
     }
 
     private static Icon CreateAppIcon()
+    {
+        try
+        {
+            // 1. Try loading directly from file in base directory
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string localIco = Path.Combine(baseDir, "ico", "UltraShot.ico");
+            if (File.Exists(localIco))
+            {
+                return new Icon(localIco);
+            }
+
+            // 2. Try loading from WPF embedded assembly resource
+            var uri = new Uri("pack://application:,,,/UltraShot;component/ico/UltraShot.ico", UriKind.Absolute);
+            var streamInfo = Application.GetResourceStream(uri);
+            if (streamInfo?.Stream != null)
+            {
+                return new Icon(streamInfo.Stream);
+            }
+
+            // 3. Try extracting from current executable process
+            var processPath = Environment.ProcessPath;
+            if (!string.IsNullOrEmpty(processPath) && File.Exists(processPath))
+            {
+                var exeIcon = Icon.ExtractAssociatedIcon(processPath);
+                if (exeIcon != null)
+                {
+                    return exeIcon;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Simge yükleme hatası: {ex.Message}");
+        }
+
+        return GenerateFallbackIcon();
+    }
+
+    private static Icon GenerateFallbackIcon()
     {
         // Generate a crisp modern camera icon programmatically if no .ico file is present
         using var bitmap = new Bitmap(32, 32);

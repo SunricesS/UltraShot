@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -11,7 +11,14 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AssemblyName>UltraShot</AssemblyName>
     <RootNamespace>UltraShot</RootNamespace>
+    <ApplicationIcon>ico\UltraShot.ico</ApplicationIcon>
   </PropertyGroup>
 
-</Project>
+  <ItemGroup>
+    <Resource Include="ico\UltraShot.ico" />
+    <None Include="ico\UltraShot.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
+</Project>
