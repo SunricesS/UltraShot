@@ -30,7 +30,7 @@ public class ScreenshotItem
         {
             if (_thumbnail == null && File.Exists(FilePath))
             {
-                _thumbnail = LoadThumbnail(FilePath, 220);
+                _thumbnail = LoadThumbnail(FilePath, 120);
             }
             return _thumbnail;
         }

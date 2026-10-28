@@ -133,6 +133,7 @@ public partial class App : Application
             _recentFlyout = new RecentFlyoutWindow();
             _recentFlyout.OpenEditorRequested += OpenEditor;
             _recentFlyout.OpenSettingsRequested += ShowSettings;
+            _recentFlyout.FlyoutHidden += TrimMemory;
             _recentFlyout.Closed += (s, e) => _recentFlyout = null;
         }
 
@@ -150,6 +151,7 @@ public partial class App : Application
             }
 
             var editor = new EditorWindow(filePath);
+            editor.Closed += (s, e) => TrimMemory();
             editor.Show();
             editor.Activate();
         }
@@ -173,7 +175,11 @@ public partial class App : Application
             _hotkeyManager?.RegisterFromSettings(SettingsManager.Current);
             _trayManager?.UpdateDisplayStrings();
         };
-        _settingsWindow.Closed += (s, e) => _settingsWindow = null;
+        _settingsWindow.Closed += (s, e) =>
+        {
+            _settingsWindow = null;
+            TrimMemory();
+        };
         _settingsWindow.ShowDialog();
     }
 

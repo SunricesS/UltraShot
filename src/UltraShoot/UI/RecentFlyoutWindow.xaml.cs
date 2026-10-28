@@ -11,6 +11,7 @@ public partial class RecentFlyoutWindow : Window
 {
     public event Action<string>? OpenEditorRequested;
     public event Action? OpenSettingsRequested;
+    public event Action? FlyoutHidden;
 
     public RecentFlyoutWindow()
     {
@@ -31,9 +32,16 @@ public partial class RecentFlyoutWindow : Window
         Focus();
     }
 
+    public void Dismiss()
+    {
+        Hide();
+        ScreenshotsList.ItemsSource = null;
+        FlyoutHidden?.Invoke();
+    }
+
     public void RefreshScreenshots()
     {
-        var items = StorageService.GetRecentScreenshots(25);
+        var items = StorageService.GetRecentScreenshots(15);
         ScreenshotsList.ItemsSource = items;
 
         if (items.Count == 0)
@@ -50,12 +58,12 @@ public partial class RecentFlyoutWindow : Window
 
     private void Window_Deactivated(object sender, EventArgs e)
     {
-        Hide();
+        Dismiss();
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
     {
-        Hide();
+        Dismiss();
     }
 
     private void OpenFolder_Click(object sender, RoutedEventArgs e)
@@ -65,7 +73,7 @@ public partial class RecentFlyoutWindow : Window
 
     private void OpenSettings_Click(object sender, RoutedEventArgs e)
     {
-        Hide();
+        Dismiss();
         OpenSettingsRequested?.Invoke();
     }
 
@@ -74,7 +82,7 @@ public partial class RecentFlyoutWindow : Window
         e.Handled = true;
         if (sender is FrameworkElement { DataContext: ScreenshotItem item })
         {
-            Hide();
+            Dismiss();
             OpenEditorRequested?.Invoke(item.FilePath);
         }
     }
@@ -84,7 +92,7 @@ public partial class RecentFlyoutWindow : Window
         e.Handled = true;
         if (sender is FrameworkElement { Tag: ScreenshotItem item })
         {
-            Hide();
+            Dismiss();
             OpenEditorRequested?.Invoke(item.FilePath);
         }
     }
