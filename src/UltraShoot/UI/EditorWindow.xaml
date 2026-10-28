@@ -1,0 +1,225 @@
+<Window x:Class="UltraShoot.UI.EditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="UltraShoot - Ekran Görüntüsü Düzenleyici"
+        Width="1050" Height="700"
+        WindowStartupLocation="CenterScreen"
+        Background="#181818"
+        Foreground="#EEEEEE"
+        Loaded="Window_Loaded"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <!-- Modern Toolbar Button Style -->
+        <Style x:Key="ToolButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#333337"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3E3E42"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#007ACC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ToolRadioStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#333337"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#007ACC"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0098FF"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#555555"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Toolbar -->
+        <Border Grid.Row="0" Background="#202022" BorderBrush="#333337" BorderThickness="0,0,0,1" Padding="10,8">
+            <Grid>
+                <!-- Drawing Tools & Shapes -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <RadioButton x:Name="PenToolBtn" Style="{StaticResource ToolRadioStyle}" Checked="Tool_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✏️" Margin="0,0,4,0"/>
+                            <TextBlock Text="Kalem"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton x:Name="HighlighterToolBtn" Style="{StaticResource ToolRadioStyle}" Checked="Tool_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🖍️" Margin="0,0,4,0"/>
+                            <TextBlock Text="Vurgulayıcı"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton x:Name="ArrowToolBtn" Style="{StaticResource ToolRadioStyle}" Checked="Tool_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="➡️" Margin="0,0,4,0"/>
+                            <TextBlock Text="Ok"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton x:Name="RectToolBtn" Style="{StaticResource ToolRadioStyle}" Checked="Tool_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⬜" Margin="0,0,4,0"/>
+                            <TextBlock Text="Kutu"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton x:Name="CropToolBtn" Style="{StaticResource ToolRadioStyle}" Checked="Tool_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✂️" Margin="0,0,4,0"/>
+                            <TextBlock Text="Kırp"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <Separator Background="#333337" Margin="8,4" Width="1"/>
+
+                    <!-- Color palette -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
+                        <Button Width="20" Height="20" Background="#FF3B30" BorderThickness="1" BorderBrush="#FFF" Margin="2,0" Click="Color_Click" Tag="#FF3B30" ToolTip="Kırmızı"/>
+                        <Button Width="20" Height="20" Background="#FF9500" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#FF9500" ToolTip="Turuncu"/>
+                        <Button Width="20" Height="20" Background="#FFCC00" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#FFCC00" ToolTip="Sarı"/>
+                        <Button Width="20" Height="20" Background="#34C759" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#34C759" ToolTip="Yeşil"/>
+                        <Button Width="20" Height="20" Background="#007AFF" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#007AFF" ToolTip="Mavi"/>
+                        <Button Width="20" Height="20" Background="#AF52DE" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#AF52DE" ToolTip="Mor"/>
+                        <Button Width="20" Height="20" Background="#FFFFFF" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#FFFFFF" ToolTip="Beyaz"/>
+                        <Button Width="20" Height="20" Background="#000000" BorderThickness="1" BorderBrush="#555" Margin="2,0" Click="Color_Click" Tag="#000000" ToolTip="Siyah"/>
+                    </StackPanel>
+
+                    <!-- Stroke Size -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+                        <TextBlock Text="Kalınlık:" Foreground="#888888" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <ComboBox x:Name="StrokeThicknessCombo" SelectionChanged="Thickness_Changed" Width="60" Background="#2D2D30" Foreground="#FFF">
+                            <ComboBoxItem Content="2 px" Tag="2"/>
+                            <ComboBoxItem Content="4 px" Tag="4"/>
+                            <ComboBoxItem Content="8 px" Tag="8"/>
+                            <ComboBoxItem Content="16 px" Tag="16"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <Button Style="{StaticResource ToolButtonStyle}" Click="Undo_Click" ToolTip="Geri Al (Ctrl+Z)">
+                        <TextBlock Text="↩️ Geri Al"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Actions: Copy, Save As, Save -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="ApplyCropBtn" Style="{StaticResource ToolButtonStyle}" Background="#007ACC" Foreground="#FFF" Visibility="Collapsed" Click="ApplyCrop_Click" Margin="0,0,8,0">
+                        <TextBlock Text="✂️ Kırpmayı Uygula"/>
+                    </Button>
+
+                    <Button Style="{StaticResource ToolButtonStyle}" Click="Copy_Click" ToolTip="Panoya Kopyala">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" Margin="0,0,4,0"/>
+                            <TextBlock Text="Panoya Kopyala"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource ToolButtonStyle}" Click="SaveAs_Click" ToolTip="Farklı Kaydet...">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💾" Margin="0,0,4,0"/>
+                            <TextBlock Text="Farklı Kaydet..."/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource ToolButtonStyle}" Background="#1E7E34" Foreground="#FFF" Click="Save_Click" ToolTip="Mevcut Dosyayı Güncelle">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✓" Margin="0,0,4,0"/>
+                            <TextBlock Text="Kaydet"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Canvas Viewport with ScrollViewer -->
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#121212">
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                <!-- Outer Border / Shadow for screenshot -->
+                <Border BorderBrush="#333337" BorderThickness="1" CornerRadius="4">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="4" Opacity="0.6"/>
+                    </Border.Effect>
+
+                    <Grid x:Name="CanvasContainer" ClipToBounds="True">
+                        <!-- Background captured image -->
+                        <Image x:Name="SourceImage" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                        <!-- Smooth Freehand Ink Layer -->
+                        <InkCanvas x:Name="DrawingInkCanvas" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                        <!-- Shapes / Overlay Layer for Arrows, Rectangles, Crop guides -->
+                        <Canvas x:Name="ShapesCanvas" Background="Transparent" 
+                                MouseLeftButtonDown="ShapesCanvas_MouseDown"
+                                MouseMove="ShapesCanvas_MouseMove"
+                                MouseLeftButtonUp="ShapesCanvas_MouseUp"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="#202022" BorderBrush="#333337" BorderThickness="0,1,0,0" Padding="14,6">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="FilePathStatusText" Text="Dosya:" Foreground="#888888" FontSize="11"/>
+                    <TextBlock Text="  •  " Foreground="#444444" FontSize="11"/>
+                    <TextBlock x:Name="DimensionsStatusText" Text="0 × 0" Foreground="#00D2FF" FontSize="11" FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <TextBlock x:Name="ToolStatusText" Text="Kalem aracı aktif  •  ESC: Çıkış  •  Ctrl+S: Kaydet  •  Ctrl+C: Panoya Kopyala" 
+                           Foreground="#777777" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

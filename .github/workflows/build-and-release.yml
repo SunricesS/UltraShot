@@ -1,0 +1,56 @@
+name: Build and Release UltraShoot
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore src/UltraShoot/UltraShoot.csproj -r win-x64
+
+    - name: Build and Publish Standalone Single-File
+      run: >
+        dotnet publish src/UltraShoot/UltraShoot.csproj
+        -c Release
+        -r win-x64
+        --self-contained true
+        -p:PublishSingleFile=true
+        -p:IncludeNativeLibrariesForSelfExtract=true
+        -p:EnableCompressionInSingleFile=true
+        -o ./dist/standalone
+
+    - name: Create Release Archive
+      shell: pwsh
+      run: |
+        Compress-Archive -Path ./dist/standalone/UltraShoot.exe -DestinationPath ./dist/UltraShoot-win-x64-portable.zip
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: UltraShoot-Standalone-win-x64
+        path: ./dist/UltraShoot-win-x64-portable.zip
+
+    - name: Publish GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          ./dist/standalone/UltraShoot.exe
+          ./dist/UltraShoot-win-x64-portable.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,37 @@
+using System.IO;
+using System.Text.Json;
+
+namespace UltraShoot.Models;
+
+public class AppSettings
+{
+    public string SaveDirectory { get; set; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "UltraShoot");
+
+    public string HotkeyModifiers { get; set; } = "Control, Shift";
+    public string HotkeyKey { get; set; } = "S";
+
+    public bool PlaySound { get; set; } = false;
+    public bool OpenFlyoutAfterCapture { get; set; } = true;
+    public bool CopyImageToClipboard { get; set; } = true;
+    public bool AutoSaveScreenshot { get; set; } = true;
+    public bool StartWithWindows { get; set; } = false;
+
+    // Helper to format hotkey display string (e.g. "Ctrl + Shift + S" or "PrintScreen")
+    public string GetHotkeyDisplayString()
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(HotkeyModifiers) && HotkeyModifiers != "None")
+        {
+            foreach (var mod in HotkeyModifiers.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (mod.Equals("Control", StringComparison.OrdinalIgnoreCase)) parts.Add("Ctrl");
+                else if (mod.Equals("Shift", StringComparison.OrdinalIgnoreCase)) parts.Add("Shift");
+                else if (mod.Equals("Alt", StringComparison.OrdinalIgnoreCase)) parts.Add("Alt");
+                else if (mod.Equals("Win", StringComparison.OrdinalIgnoreCase)) parts.Add("Win");
+            }
+        }
+        parts.Add(HotkeyKey);
+        return string.Join(" + ", parts);
+    }
+}
