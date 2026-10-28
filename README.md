@@ -3,7 +3,7 @@
 #  UltraShoot
 
 **ultra-lightweight Windows screenshot tool & annotation editor.**  
-*Windows için ultra hızlı, düşük bellek tüketen ekran alıntısı ve görsel düzenleme aracı.*
+
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-blue?logo=windows)](https://microsoft.com/windows)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
@@ -14,7 +14,7 @@
 
 ---
 
-##  Highlights / Öne Çıkan Özellikler
+##  Highlights
 
 *  **Zero-Lag Overlay (< 10 ms):** Directly captures the virtual desktop using low-level Win32 GDI `BitBlt` calls. No UWP/WinRT bloat, no 1-2 second startup lag.
 *  **Instant Clipboard Copy:** The moment you release your mouse after selecting an area, the image is synchronously placed onto your Windows Clipboard (`Ctrl+V` anywhere immediately).
@@ -36,7 +36,7 @@
 
 ---
 
-##  Download & Portability / Taşınabilir Sürüm
+##  Download & Portability
 
 No installation or prerequisites required! UltraShoot can be downloaded as a **Self-Contained Single-File Executable**:
 * Works out of the box on any 64-bit Windows 10 / 11 PC.
@@ -45,7 +45,7 @@ No installation or prerequisites required! UltraShoot can be downloaded as a **S
 
 ---
 
-##  Keyboard Shortcuts / Kısayollar
+##  Keyboard Shortcuts
 
 | Shortcut | Action |
 |---|---|
@@ -59,7 +59,7 @@ No installation or prerequisites required! UltraShoot can be downloaded as a **S
 
 ---
 
-##  Building from Source / Kaynaktan Derleme
+##  Building from Source
 
 ### Requirements
 * [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
