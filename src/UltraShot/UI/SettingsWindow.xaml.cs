@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using UltraShot.Core;
@@ -9,11 +10,16 @@ public partial class SettingsWindow : Window
     private string _currentModifiers = "Control, Shift";
     private string _currentKey = "S";
 
+    private IntPtr _recordingHookId = IntPtr.Zero;
+    private NativeMethods.LowLevelKeyboardProc? _recordingHookProc;
+
     public event Action? SettingsSaved;
 
     public SettingsWindow()
     {
         InitializeComponent();
+        Closed += (s, e) => StopRecordingHook();
+        Deactivated += (s, e) => StopRecordingHook();
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -106,13 +112,11 @@ public partial class SettingsWindow : Window
         var parts = new List<string>();
         if (!string.IsNullOrWhiteSpace(_currentModifiers) && _currentModifiers != "None")
         {
-            foreach (var mod in _currentModifiers.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-            {
-                if (mod.Equals("Control", StringComparison.OrdinalIgnoreCase)) parts.Add("Ctrl");
-                else if (mod.Equals("Shift", StringComparison.OrdinalIgnoreCase)) parts.Add("Shift");
-                else if (mod.Equals("Alt", StringComparison.OrdinalIgnoreCase)) parts.Add("Alt");
-                else if (mod.Equals("Win", StringComparison.OrdinalIgnoreCase)) parts.Add("Win");
-            }
+            var mods = _currentModifiers.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (mods.Any(m => m.Equals("Win", StringComparison.OrdinalIgnoreCase))) parts.Add("Win");
+            if (mods.Any(m => m.Equals("Control", StringComparison.OrdinalIgnoreCase))) parts.Add("Ctrl");
+            if (mods.Any(m => m.Equals("Shift", StringComparison.OrdinalIgnoreCase))) parts.Add("Shift");
+            if (mods.Any(m => m.Equals("Alt", StringComparison.OrdinalIgnoreCase))) parts.Add("Alt");
         }
         parts.Add(_currentKey);
         HotkeyTextBox.Text = string.Join(" + ", parts);
@@ -121,11 +125,103 @@ public partial class SettingsWindow : Window
     private void HotkeyTextBox_GotFocus(object sender, RoutedEventArgs e)
     {
         HotkeyTextBox.Text = "Tuş kombinasyonuna basın...";
+        StartRecordingHook();
     }
 
     private void HotkeyTextBox_LostFocus(object sender, RoutedEventArgs e)
     {
+        StopRecordingHook();
         UpdateHotkeyTextBoxDisplay();
+    }
+
+    private void StartRecordingHook()
+    {
+        if (_recordingHookId != IntPtr.Zero) return;
+
+        _recordingHookProc = RecordingHookCallback;
+        IntPtr hMod = NativeMethods.GetModuleHandle(IntPtr.Zero);
+        _recordingHookId = NativeMethods.SetWindowsHookExW(NativeMethods.WH_KEYBOARD_LL, _recordingHookProc, hMod, 0);
+    }
+
+    private void StopRecordingHook()
+    {
+        if (_recordingHookId != IntPtr.Zero)
+        {
+            NativeMethods.UnhookWindowsHookEx(_recordingHookId);
+            _recordingHookId = IntPtr.Zero;
+            _recordingHookProc = null;
+        }
+    }
+
+    private IntPtr RecordingHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (nCode >= 0)
+        {
+            int msg = wParam.ToInt32();
+            if (msg == NativeMethods.WM_KEYDOWN || msg == NativeMethods.WM_SYSKEYDOWN)
+            {
+                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
+                uint vkCode = hookStruct.vkCode;
+
+                // Check for lone modifier keys
+                if (vkCode is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN or
+                    NativeMethods.VK_SHIFT or NativeMethods.VK_LSHIFT or NativeMethods.VK_RSHIFT or
+                    NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL or
+                    NativeMethods.VK_MENU or NativeMethods.VK_LMENU or NativeMethods.VK_RMENU)
+                {
+                    // Suppress lone Win key so Start Menu does not pop up while recording
+                    if (vkCode is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
+                    {
+                        return (IntPtr)1;
+                    }
+                    return NativeMethods.CallNextHookEx(_recordingHookId, nCode, wParam, lParam);
+                }
+
+                // A key was pressed. Detect modifier states via GetAsyncKeyState
+                bool win = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 ||
+                           (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) & 0x8000) != 0;
+                bool ctrl = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0;
+                bool shift = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0;
+                bool alt = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0;
+
+                var mods = new List<string>();
+                if (win) mods.Add("Win");
+                if (ctrl) mods.Add("Control");
+                if (shift) mods.Add("Shift");
+                if (alt) mods.Add("Alt");
+
+                string keyName;
+                if (vkCode == 0x2C) // VK_SNAPSHOT
+                {
+                    keyName = "PrintScreen";
+                }
+                else
+                {
+                    var wpfKey = KeyInterop.KeyFromVirtualKey((int)vkCode);
+                    keyName = wpfKey.ToString();
+                }
+
+                _currentModifiers = mods.Count > 0 ? string.Join(", ", mods) : "None";
+                _currentKey = keyName;
+
+                Dispatcher.BeginInvoke(UpdateHotkeyTextBoxDisplay);
+
+                // Consume the key so Windows shell shortcuts (e.g. Win+Shift+S, Win+S, Win+A)
+                // don't launch Snipping Tool or Search while configuring in UltraShot
+                return (IntPtr)1;
+            }
+            else if (msg == NativeMethods.WM_KEYUP || msg == NativeMethods.WM_SYSKEYUP)
+            {
+                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
+                if (hookStruct.vkCode is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
+                {
+                    // Suppress Start Menu trigger on Win release
+                    return (IntPtr)1;
+                }
+            }
+        }
+
+        return NativeMethods.CallNextHookEx(_recordingHookId, nCode, wParam, lParam);
     }
 
     private void HotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -141,11 +237,21 @@ public partial class SettingsWindow : Window
             return;
         }
 
+        bool isWinDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 ||
+                         (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) & 0x8000) != 0 ||
+                         (Keyboard.Modifiers & ModifierKeys.Windows) == ModifierKeys.Windows;
+        bool isCtrlDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0 ||
+                          (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
+        bool isShiftDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0 ||
+                           (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+        bool isAltDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0 ||
+                         (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt;
+
         var mods = new List<string>();
-        if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control) mods.Add("Control");
-        if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) mods.Add("Shift");
-        if ((Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt) mods.Add("Alt");
-        if ((Keyboard.Modifiers & ModifierKeys.Windows) == ModifierKeys.Windows) mods.Add("Win");
+        if (isWinDown) mods.Add("Win");
+        if (isCtrlDown) mods.Add("Control");
+        if (isShiftDown) mods.Add("Shift");
+        if (isAltDown) mods.Add("Alt");
 
         _currentModifiers = mods.Count > 0 ? string.Join(", ", mods) : "None";
         _currentKey = key switch
@@ -181,6 +287,8 @@ public partial class SettingsWindow : Window
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
+        StopRecordingHook();
+
         var settings = SettingsManager.Current;
 
         settings.HotkeyModifiers = _currentModifiers;
@@ -211,7 +319,7 @@ public partial class SettingsWindow : Window
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
+        StopRecordingHook();
         Close();
     }
 }
-

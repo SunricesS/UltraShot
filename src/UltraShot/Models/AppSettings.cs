@@ -38,13 +38,11 @@ public class AppSettings
         var parts = new List<string>();
         if (!string.IsNullOrWhiteSpace(HotkeyModifiers) && HotkeyModifiers != "None")
         {
-            foreach (var mod in HotkeyModifiers.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-            {
-                if (mod.Equals("Control", StringComparison.OrdinalIgnoreCase)) parts.Add("Ctrl");
-                else if (mod.Equals("Shift", StringComparison.OrdinalIgnoreCase)) parts.Add("Shift");
-                else if (mod.Equals("Alt", StringComparison.OrdinalIgnoreCase)) parts.Add("Alt");
-                else if (mod.Equals("Win", StringComparison.OrdinalIgnoreCase)) parts.Add("Win");
-            }
+            var mods = HotkeyModifiers.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (mods.Any(m => m.Equals("Win", StringComparison.OrdinalIgnoreCase))) parts.Add("Win");
+            if (mods.Any(m => m.Equals("Control", StringComparison.OrdinalIgnoreCase))) parts.Add("Ctrl");
+            if (mods.Any(m => m.Equals("Shift", StringComparison.OrdinalIgnoreCase))) parts.Add("Shift");
+            if (mods.Any(m => m.Equals("Alt", StringComparison.OrdinalIgnoreCase))) parts.Add("Alt");
         }
         parts.Add(HotkeyKey);
         return string.Join(" + ", parts);

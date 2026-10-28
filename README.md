@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 #  UltraShot
 
@@ -32,7 +32,7 @@
   *  **Crop Tool:** Interactively refine and crop screenshots.
   *  **Undo (Ctrl+Z):** Revert actions step by step.
   *  **Save As:** Export to PNG, JPG, or BMP.
-*  **Customizable Global Hotkey:** Change the shortcut in settings simply by pressing your preferred key combination (e.g., `Ctrl+Shift+S`, `PrintScreen`, `Alt+A`).
+*  **Customizable Global Hotkey & Windows Key (`Win`) Support:** Change the shortcut in settings simply by pressing your preferred key combination (e.g., `Ctrl+Shift+S`, `Win+Shift+S`, `PrintScreen`, `Win+A`). Low-level hardware hook allows seamlessly replacing Windows' default Snipping Tool with zero lag!
 
 ---
 
