@@ -1,0 +1,6 @@
+﻿<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/UltraShot/UltraShot.csproj" />
+  </Folder>
+</Solution>
+

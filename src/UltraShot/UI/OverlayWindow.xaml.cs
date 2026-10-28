@@ -1,10 +1,10 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using UltraShoot.Core;
+using UltraShot.Core;
 
-namespace UltraShoot.UI;
+namespace UltraShot.UI;
 
 public partial class OverlayWindow : Window
 {
@@ -169,3 +169,4 @@ public partial class OverlayWindow : Window
         }
     }
 }
+

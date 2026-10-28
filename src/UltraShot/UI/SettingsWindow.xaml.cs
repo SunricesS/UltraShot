@@ -1,8 +1,8 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
-using UltraShoot.Core;
+using UltraShot.Core;
 
-namespace UltraShoot.UI;
+namespace UltraShot.UI;
 
 public partial class SettingsWindow : Window
 {
@@ -195,3 +195,4 @@ public partial class SettingsWindow : Window
         Close();
     }
 }
+

@@ -1,9 +1,9 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows.Media.Imaging;
-using UltraShoot.Models;
+using UltraShot.Models;
 
-namespace UltraShoot.Core;
+namespace UltraShot.Core;
 
 public static class StorageService
 {
@@ -17,7 +17,7 @@ public static class StorageService
 
         var ext = SettingsManager.Current.GetFileExtension();
         var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-        var fileName = $"UltraShoot_{timestamp}{ext}";
+        var fileName = $"UltraShot_{timestamp}{ext}";
         return Path.Combine(folder, fileName);
     }
 
@@ -170,3 +170,4 @@ public static class StorageService
         }
     }
 }
+

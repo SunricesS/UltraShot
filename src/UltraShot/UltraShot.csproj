@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -9,8 +9,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <AssemblyName>UltraShoot</AssemblyName>
-    <RootNamespace>UltraShoot</RootNamespace>
+    <AssemblyName>UltraShot</AssemblyName>
+    <RootNamespace>UltraShot</RootNamespace>
   </PropertyGroup>
 
 </Project>
+

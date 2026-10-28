@@ -1,7 +1,7 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows.Media.Imaging;
 
-namespace UltraShoot.Models;
+namespace UltraShot.Models;
 
 public class ScreenshotItem
 {
@@ -57,3 +57,4 @@ public class ScreenshotItem
         }
     }
 }
+

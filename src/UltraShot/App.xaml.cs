@@ -1,12 +1,12 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Media;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using UltraShoot.Core;
-using UltraShoot.UI;
+using UltraShot.Core;
+using UltraShot.UI;
 
-namespace UltraShoot;
+namespace UltraShot;
 
 public partial class App : Application
 {
@@ -19,13 +19,13 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        const string appGuid = "UltraShoot-App-SingleInstance-Guid-8f92b7";
+        const string appGuid = "UltraShot-App-SingleInstance-Guid-8f92b7";
         _mutex = new Mutex(true, appGuid, out bool isNewInstance);
 
         if (!isNewInstance)
         {
-            MessageBox.Show("UltraShoot zaten arka planda çalışıyor! Sistem tepsisindeki küçük simgeden erişebilirsiniz.", 
-                "UltraShoot", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("UltraShot zaten arka planda çalışıyor! Sistem tepsisindeki küçük simgeden erişebilirsiniz.", 
+                "UltraShot", MessageBoxButton.OK, MessageBoxImage.Information);
             Current.Shutdown();
             return;
         }
@@ -37,14 +37,14 @@ public partial class App : Application
         {
             args.Handled = true;
             MessageBox.Show($"Bir işlem sırasında hata oluştu:\n{args.Exception.Message}", 
-                "UltraShoot", MessageBoxButton.OK, MessageBoxImage.Warning);
+                "UltraShot", MessageBoxButton.OK, MessageBoxImage.Warning);
         };
 
         AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
         {
             if (args.ExceptionObject is Exception ex)
             {
-                MessageBox.Show($"Beklenmeyen hata:\n{ex.Message}", "UltraShoot", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Beklenmeyen hata:\n{ex.Message}", "UltraShot", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         };
 
@@ -146,7 +146,7 @@ public partial class App : Application
         {
             if (!System.IO.File.Exists(filePath))
             {
-                MessageBox.Show("Düzenlenmek istenen görsel bulunamadı.", "UltraShoot", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Düzenlenmek istenen görsel bulunamadı.", "UltraShot", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -183,23 +183,35 @@ public partial class App : Application
         _settingsWindow.ShowDialog();
     }
 
-    private void ShutdownApp()
+    private void CleanupResources()
     {
         _hotkeyManager?.Dispose();
-        _trayManager?.Dispose();
-        _mutex?.ReleaseMutex();
-        _mutex?.Dispose();
+        _hotkeyManager = null;
 
+        _trayManager?.Dispose();
+        _trayManager = null;
+
+        if (_mutex != null)
+        {
+            try
+            {
+                _mutex.ReleaseMutex();
+            }
+            catch { }
+            _mutex.Dispose();
+            _mutex = null;
+        }
+    }
+
+    private void ShutdownApp()
+    {
+        CleanupResources();
         Shutdown();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _hotkeyManager?.Dispose();
-        _trayManager?.Dispose();
-        _mutex?.ReleaseMutex();
-        _mutex?.Dispose();
-
+        CleanupResources();
         base.OnExit(e);
     }
 
@@ -214,3 +226,4 @@ public partial class App : Application
         catch { }
     }
 }
+

@@ -1,6 +1,6 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-namespace UltraShoot.Core;
+namespace UltraShot.Core;
 
 public static partial class NativeMethods
 {
@@ -73,3 +73,4 @@ public static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool SetForegroundWindow(IntPtr hWnd);
 }
+

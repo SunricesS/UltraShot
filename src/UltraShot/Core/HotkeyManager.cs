@@ -1,8 +1,8 @@
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using System.Windows.Interop;
-using UltraShoot.Models;
+using UltraShot.Models;
 
-namespace UltraShoot.Core;
+namespace UltraShot.Core;
 
 public class HotkeyManager : IDisposable
 {
@@ -15,7 +15,7 @@ public class HotkeyManager : IDisposable
     public HotkeyManager()
     {
         // Create a hidden message window to receive WM_HOTKEY
-        var parameters = new HwndSourceParameters("UltraShoot_HotkeyReceiver")
+        var parameters = new HwndSourceParameters("UltraShot_HotkeyReceiver")
         {
             WindowStyle = 0,
             ExtendedWindowStyle = 0,
@@ -114,3 +114,4 @@ public class HotkeyManager : IDisposable
         }
     }
 }
+

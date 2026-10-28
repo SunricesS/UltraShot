@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 #  UltraShot
 
@@ -20,7 +20,7 @@
 *  **Instant Clipboard Copy:** The moment you release your mouse after selecting an area, the image is synchronously placed onto your Windows Clipboard (`Ctrl+V` anywhere immediately).
 *  **Minimal Resource Footprint (~25 MB RAM, 0% CPU):** Pure event-driven Windows hotkey messaging (`WM_HOTKEY`). Automatic working-set memory trimming when idling in the system tray.
 *  **Full Screen, Multi-Monitor & DPI-Aware:** Compatible with borderless fullscreen games, multiple monitors with different DPI scaling (100%, 125%, 150%, 4K).
-*  **Automated Unique Naming:** Screenshots are automatically saved to your `Pictures\UltraShoot` folder with millisecond-precision timestamps (`UltraShoot_yyyy-MM-dd_HH-mm-ss-fff.png`).
+*  **Automated Unique Naming:** Screenshots are automatically saved to your `Pictures\UltraShot` folder with millisecond-precision timestamps (`UltraShot_yyyy-MM-dd_HH-mm-ss-fff.png`).
 *  **System Tray Gallery / Drawer:**
   * Shows recent screenshots in a sleek bottom-right floating card.
   * Direct thumbnail previews, dimensions, and quick copy/edit/delete buttons.
@@ -38,7 +38,7 @@
 
 ##  Download & Portability
 
-No installation or prerequisites required! UltraShoot can be downloaded as a **Self-Contained Single-File Executable**:
+No installation or prerequisites required! UltraShot can be downloaded as a **Self-Contained Single-File Executable**:
 * Works out of the box on any 64-bit Windows 10 / 11 PC.
 * **Does not require .NET SDK or .NET Runtime to be installed.**
 
@@ -73,7 +73,7 @@ dotnet publish -c Release -o ./publish
 
 ### 2. Standalone Portable Build (Runs on any PC without .NET runtime)
 ```powershell
-dotnet publish src/UltraShoot/UltraShoot.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o ./publish-standalone
+dotnet publish src/UltraShot/UltraShot.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o ./publish-standalone
 ```
 
 ---
@@ -81,9 +81,9 @@ dotnet publish src/UltraShoot/UltraShoot.csproj -c Release -r win-x64 --self-con
 ##  Project Architecture / Proje Yapısı
 
 ```
-UltraShoot/
+UltraShot/
 ├── src/
-│   └── UltraShoot/
+│   └── UltraShot/
 │       ├── Core/
 │       │   ├── NativeMethods.cs         # Win32 GDI, BitBlt, RegisterHotKey interop
 │       │   ├── HotkeyManager.cs         # Global hotkey message window hook
@@ -114,3 +114,4 @@ UltraShoot/
 
 ## 📄 License
 This project is licensed under the [MIT License](LICENSE).
+

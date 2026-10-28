@@ -1,11 +1,11 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using UltraShoot.Core;
-using UltraShoot.Models;
+using UltraShot.Core;
+using UltraShot.Models;
 
-namespace UltraShoot.UI;
+namespace UltraShot.UI;
 
 public partial class RecentFlyoutWindow : Window
 {
@@ -141,3 +141,4 @@ public partial class RecentFlyoutWindow : Window
         }
     }
 }
+

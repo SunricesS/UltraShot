@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
@@ -7,9 +7,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Microsoft.Win32;
-using UltraShoot.Core;
+using UltraShot.Core;
 
-namespace UltraShoot.UI;
+namespace UltraShot.UI;
 
 public partial class EditorWindow : Window
 {
@@ -385,7 +385,7 @@ public partial class EditorWindow : Window
         var sfd = new SaveFileDialog
         {
             Filter = "PNG Resmi (*.png)|*.png|JPEG Resmi (*.jpg)|*.jpg|Bitmap Resmi (*.bmp)|*.bmp",
-            FileName = !string.IsNullOrEmpty(_filePath) ? System.IO.Path.GetFileName(_filePath) : $"UltraShoot_Screenshot{ext}",
+            FileName = !string.IsNullOrEmpty(_filePath) ? System.IO.Path.GetFileName(_filePath) : $"UltraShot_Screenshot{ext}",
             DefaultExt = ext
         };
 
@@ -419,3 +419,4 @@ public partial class EditorWindow : Window
         }
     }
 }
+

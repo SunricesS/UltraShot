@@ -1,4 +1,4 @@
-<Application x:Class="UltraShoot.App"
+﻿<Application x:Class="UltraShot.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              ShutdownMode="OnExplicitShutdown">
@@ -6,3 +6,4 @@
          
     </Application.Resources>
 </Application>
+

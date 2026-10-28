@@ -1,12 +1,12 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 
-namespace UltraShoot.Models;
+namespace UltraShot.Models;
 
 public class AppSettings
 {
     public string SaveDirectory { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "UltraShoot");
+        Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "UltraShot");
 
     public string HotkeyModifiers { get; set; } = "Control, Shift";
     public string HotkeyKey { get; set; } = "S";
@@ -45,3 +45,4 @@ public class AppSettings
         return string.Join(" + ", parts);
     }
 }
+

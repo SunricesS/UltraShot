@@ -1,8 +1,8 @@
-using System.Drawing;
+﻿using System.Drawing;
 using System.Windows.Forms;
-using UltraShoot.Core;
+using UltraShot.Core;
 
-namespace UltraShoot.UI;
+namespace UltraShot.UI;
 
 public class TrayIconManager : IDisposable
 {
@@ -42,7 +42,7 @@ public class TrayIconManager : IDisposable
             Icon = CreateAppIcon(),
             Visible = true,
             ContextMenuStrip = contextMenu,
-            Text = "UltraShoot"
+            Text = "UltraShot"
         };
 
         _notifyIcon.MouseClick += (s, e) =>
@@ -60,7 +60,7 @@ public class TrayIconManager : IDisposable
     {
         var hotkeyStr = SettingsManager.Current.GetHotkeyDisplayString();
         _captureMenuItem.Text = $"📷 Ekran Görüntüsü Al ({hotkeyStr})";
-        _notifyIcon.Text = $"UltraShoot ({hotkeyStr})";
+        _notifyIcon.Text = $"UltraShot ({hotkeyStr})";
     }
 
     private static Icon CreateAppIcon()
@@ -99,3 +99,4 @@ public class TrayIconManager : IDisposable
         _notifyIcon.Dispose();
     }
 }
+

@@ -1,14 +1,14 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using Microsoft.Win32;
-using UltraShoot.Models;
+using UltraShot.Models;
 
-namespace UltraShoot.Core;
+namespace UltraShot.Core;
 
 public static class SettingsManager
 {
     private static readonly string SettingsDirectory = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UltraShoot");
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UltraShot");
     private static readonly string SettingsFilePath = Path.Combine(SettingsDirectory, "settings.json");
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -73,7 +73,7 @@ public static class SettingsManager
         try
         {
             const string runKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-            const string appName = "UltraShoot";
+            const string appName = "UltraShot";
             using var key = Registry.CurrentUser.OpenSubKey(runKeyPath, true);
             if (key == null) return;
 
@@ -99,3 +99,4 @@ public static class SettingsManager
         }
     }
 }
+
