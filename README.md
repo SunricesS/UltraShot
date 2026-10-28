@@ -1,8 +1,8 @@
 <div align="center">
 
-# 📸 UltraShoot
+#  UltraShoot
 
-**Lightning-fast, ultra-lightweight Windows screenshot tool & annotation editor.**  
+**ultra-lightweight Windows screenshot tool & annotation editor.**  
 *Windows için ultra hızlı, düşük bellek tüketen ekran alıntısı ve görsel düzenleme aracı.*
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-blue?logo=windows)](https://microsoft.com/windows)
@@ -14,40 +14,38 @@
 
 ---
 
-## ⚡ Highlights / Öne Çıkan Özellikler
+##  Highlights / Öne Çıkan Özellikler
 
-* 🚀 **Zero-Lag Overlay (< 10 ms):** Directly captures the virtual desktop using low-level Win32 GDI `BitBlt` calls. No UWP/WinRT bloat, no 1-2 second startup lag.
-* 📋 **Instant Clipboard Copy:** The moment you release your mouse after selecting an area, the image is synchronously placed onto your Windows Clipboard (`Ctrl+V` anywhere immediately).
-* 🪶 **Minimal Resource Footprint (~25 MB RAM, 0% CPU):** Pure event-driven Windows hotkey messaging (`WM_HOTKEY`). Automatic working-set memory trimming when idling in the system tray.
-* 🖥️ **Full Screen, Multi-Monitor & DPI-Aware:** Compatible with borderless fullscreen games, multiple monitors with different DPI scaling (100%, 125%, 150%, 4K).
-* 🗂️ **Automated Unique Naming:** Screenshots are automatically saved to your `Pictures\UltraShoot` folder with millisecond-precision timestamps (`UltraShoot_yyyy-MM-dd_HH-mm-ss-fff.png`).
-* 🔔 **System Tray Gallery / Drawer:**
+*  **Zero-Lag Overlay (< 10 ms):** Directly captures the virtual desktop using low-level Win32 GDI `BitBlt` calls. No UWP/WinRT bloat, no 1-2 second startup lag.
+*  **Instant Clipboard Copy:** The moment you release your mouse after selecting an area, the image is synchronously placed onto your Windows Clipboard (`Ctrl+V` anywhere immediately).
+*  **Minimal Resource Footprint (~25 MB RAM, 0% CPU):** Pure event-driven Windows hotkey messaging (`WM_HOTKEY`). Automatic working-set memory trimming when idling in the system tray.
+*  **Full Screen, Multi-Monitor & DPI-Aware:** Compatible with borderless fullscreen games, multiple monitors with different DPI scaling (100%, 125%, 150%, 4K).
+*  **Automated Unique Naming:** Screenshots are automatically saved to your `Pictures\UltraShoot` folder with millisecond-precision timestamps (`UltraShoot_yyyy-MM-dd_HH-mm-ss-fff.png`).
+*  **System Tray Gallery / Drawer:**
   * Shows recent screenshots in a sleek bottom-right floating card.
   * Direct thumbnail previews, dimensions, and quick copy/edit/delete buttons.
   * **Tray Right-Click Menu:** "Open Screenshots Folder", "Settings & Hotkey", "Recent Screenshots", and "Exit".
 * 🎨 **Integrated Annotation & Cropping Editor:**
-  * ✏️ **Pen:** Freehand drawing with adjustable stroke width and vibrant color palette.
-  * 🖍️ **Highlighter:** Translucent marker for highlighting text and documents.
-  * ➡️ **Arrow & ⬜ Shapes:** Add crisp direction arrows and highlight boxes.
-  * ✂️ **Crop Tool:** Interactively refine and crop screenshots.
-  * ↩️ **Undo (Ctrl+Z):** Revert actions step by step.
-  * 💾 **Save As:** Export to PNG, JPG, or BMP.
-* ⚙️ **Customizable Global Hotkey:** Change the shortcut in settings simply by pressing your preferred key combination (e.g., `Ctrl+Shift+S`, `PrintScreen`, `Alt+A`).
+  *  **Pen:** Freehand drawing with adjustable stroke width and vibrant color palette.
+  *  **Highlighter:** Translucent marker for highlighting text and documents.
+  *  **Arrow & ⬜ Shapes:** Add crisp direction arrows and highlight boxes.
+  *  **Crop Tool:** Interactively refine and crop screenshots.
+  *  **Undo (Ctrl+Z):** Revert actions step by step.
+  *  **Save As:** Export to PNG, JPG, or BMP.
+*  **Customizable Global Hotkey:** Change the shortcut in settings simply by pressing your preferred key combination (e.g., `Ctrl+Shift+S`, `PrintScreen`, `Alt+A`).
 
 ---
 
-## 📥 Download & Portability / Taşınabilir Sürüm
+##  Download & Portability / Taşınabilir Sürüm
 
 No installation or prerequisites required! UltraShoot can be downloaded as a **Self-Contained Single-File Executable**:
 * Works out of the box on any 64-bit Windows 10 / 11 PC.
 * **Does not require .NET SDK or .NET Runtime to be installed.**
 
-You can find the standalone portable executable in:
-👉 [`releases/UltraShoot-v1.0.0-win-x64.exe`](releases/UltraShoot-v1.0.0-win-x64.exe)
 
 ---
 
-## ⌨️ Keyboard Shortcuts / Kısayollar
+##  Keyboard Shortcuts / Kısayollar
 
 | Shortcut | Action |
 |---|---|
@@ -61,7 +59,7 @@ You can find the standalone portable executable in:
 
 ---
 
-## 🛠️ Building from Source / Kaynaktan Derleme
+##  Building from Source / Kaynaktan Derleme
 
 ### Requirements
 * [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
@@ -80,7 +78,7 @@ dotnet publish src/UltraShoot/UltraShoot.csproj -c Release -r win-x64 --self-con
 
 ---
 
-## 📁 Project Architecture / Proje Yapısı
+##  Project Architecture / Proje Yapısı
 
 ```
 UltraShoot/
