@@ -176,6 +176,11 @@ public partial class SettingsWindow : Window
 
     private void StopRecordingHook()
     {
+        if (_isWinDown)
+        {
+            NativeMethods.SendMenuMaskAndReleaseWin();
+        }
+
         _isWinDown = false;
         _isCtrlDown = false;
         _isShiftDown = false;
@@ -254,6 +259,11 @@ public partial class SettingsWindow : Window
                     keyName = wpfKey.ToString();
                 }
 
+                if (win)
+                {
+                    NativeMethods.SendMenuMaskAndReleaseWin();
+                }
+
                 _currentModifiers = mods.Count > 0 ? string.Join(", ", mods) : "None";
                 _currentKey = keyName;
 
@@ -271,7 +281,8 @@ public partial class SettingsWindow : Window
                 if (vkCode is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
                 {
                     _isWinDown = false;
-                    return (IntPtr)1; // Suppress Start Menu trigger on Win release
+                    // Do NOT swallow WM_KEYUP! SendMenuMaskAndReleaseWin() already handled masking.
+                    // Letting WM_KEYUP pass ensures the OS knows Win is UP and never gets stuck.
                 }
                 else if (vkCode is NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL)
                 {
@@ -323,6 +334,11 @@ public partial class SettingsWindow : Window
         if (isCtrlDown) mods.Add("Control");
         if (isShiftDown) mods.Add("Shift");
         if (isAltDown) mods.Add("Alt");
+
+        if (isWinDown)
+        {
+            NativeMethods.SendMenuMaskAndReleaseWin();
+        }
 
         _currentModifiers = mods.Count > 0 ? string.Join(", ", mods) : "None";
         _currentKey = key switch

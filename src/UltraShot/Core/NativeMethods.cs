@@ -32,6 +32,10 @@ public static partial class NativeMethods
     public const int VK_LMENU = 0xA4;
     public const int VK_RMENU = 0xA5;
 
+    // Mask key (unassigned virtual key code used by PowerToys / AutoHotkey to mask Start menu)
+    public const byte VK_MASK_KEY = 0xE8;
+    public const uint KEYEVENTF_KEYUP = 0x0002;
+
     public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     [StructLayout(LayoutKind.Sequential)]
@@ -121,4 +125,22 @@ public static partial class NativeMethods
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool SetForegroundWindow(IntPtr hWnd);
+
+    [LibraryImport("user32.dll")]
+    public static partial void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+    /// <summary>
+    /// Sends a mask key (0xE8) so Windows knows a combination was used (preventing the Start menu),
+    /// and synthesizes a key release for VK_LWIN and VK_RWIN so the Windows key is never stuck down.
+    /// </summary>
+    public static void SendMenuMaskAndReleaseWin()
+    {
+        // 1. Send harmless mask key (0xE8) down and up to prevent Windows Start Menu
+        keybd_event(VK_MASK_KEY, 0, 0, UIntPtr.Zero);
+        keybd_event(VK_MASK_KEY, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+
+        // 2. Synthesize Win key up in Windows state table so it never remains stuck down
+        keybd_event((byte)VK_LWIN, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+        keybd_event((byte)VK_RWIN, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+    }
 }

@@ -27,7 +27,6 @@ public class HotkeyManager : IDisposable
     private bool _isAltDown;
 
     private bool _suppressNextKeyUp;
-    private bool _suppressNextWinKeyUp;
 
     public event Action? HotkeyPressed;
 
@@ -130,7 +129,6 @@ public class HotkeyManager : IDisposable
         _isShiftDown = false;
         _isAltDown = false;
         _suppressNextKeyUp = false;
-        _suppressNextWinKeyUp = false;
 
         // Prevent delegate from being garbage collected
         _hookProc = HookCallback;
@@ -158,7 +156,6 @@ public class HotkeyManager : IDisposable
         _isShiftDown = false;
         _isAltDown = false;
         _suppressNextKeyUp = false;
-        _suppressNextWinKeyUp = false;
     }
 
     private uint ParseVirtualKey(string keyStr)
@@ -226,7 +223,7 @@ public class HotkeyManager : IDisposable
                         _suppressNextKeyUp = true;
                         if (_targetWin)
                         {
-                            _suppressNextWinKeyUp = true;
+                            NativeMethods.SendMenuMaskAndReleaseWin();
                         }
 
                         Application.Current?.Dispatcher.BeginInvoke(() =>
@@ -245,11 +242,9 @@ public class HotkeyManager : IDisposable
                 if (vk is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
                 {
                     _isWinDown = false;
-                    if (_suppressNextWinKeyUp)
-                    {
-                        _suppressNextWinKeyUp = false;
-                        return (IntPtr)1; // Suppress Start Menu trigger on Win release after shortcut
-                    }
+                    // Do NOT swallow WM_KEYUP!
+                    // SendMenuMaskAndReleaseWin() already masked the Start menu and released the key state.
+                    // Allowing WM_KEYUP to pass ensures Windows raw input subsystem knows the Win key is UP.
                 }
                 else if (vk is NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL)
                 {
