@@ -13,6 +13,12 @@ public partial class SettingsWindow : Window
     private IntPtr _recordingHookId = IntPtr.Zero;
     private NativeMethods.LowLevelKeyboardProc? _recordingHookProc;
 
+    // Track physical modifier states explicitly in the hook
+    private bool _isWinDown;
+    private bool _isCtrlDown;
+    private bool _isShiftDown;
+    private bool _isAltDown;
+
     public event Action? SettingsSaved;
 
     public SettingsWindow()
@@ -122,6 +128,27 @@ public partial class SettingsWindow : Window
         HotkeyTextBox.Text = string.Join(" + ", parts);
     }
 
+    private void ShowActiveModifiersDisplay()
+    {
+        var parts = new List<string>();
+        if (_isWinDown) parts.Add("Win");
+        if (_isCtrlDown) parts.Add("Ctrl");
+        if (_isShiftDown) parts.Add("Shift");
+        if (_isAltDown) parts.Add("Alt");
+
+        if (parts.Count > 0)
+        {
+            string text = string.Join(" + ", parts) + " + ...";
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (HotkeyTextBox.IsFocused)
+                {
+                    HotkeyTextBox.Text = text;
+                }
+            });
+        }
+    }
+
     private void HotkeyTextBox_GotFocus(object sender, RoutedEventArgs e)
     {
         HotkeyTextBox.Text = "Tuş kombinasyonuna basın...";
@@ -136,15 +163,24 @@ public partial class SettingsWindow : Window
 
     private void StartRecordingHook()
     {
+        _isWinDown = false;
+        _isCtrlDown = false;
+        _isShiftDown = false;
+        _isAltDown = false;
+
         if (_recordingHookId != IntPtr.Zero) return;
 
         _recordingHookProc = RecordingHookCallback;
-        IntPtr hMod = NativeMethods.GetModuleHandle(IntPtr.Zero);
-        _recordingHookId = NativeMethods.SetWindowsHookExW(NativeMethods.WH_KEYBOARD_LL, _recordingHookProc, hMod, 0);
+        _recordingHookId = NativeMethods.SetWindowsHookExW(NativeMethods.WH_KEYBOARD_LL, _recordingHookProc, IntPtr.Zero, 0);
     }
 
     private void StopRecordingHook()
     {
+        _isWinDown = false;
+        _isCtrlDown = false;
+        _isShiftDown = false;
+        _isAltDown = false;
+
         if (_recordingHookId != IntPtr.Zero)
         {
             NativeMethods.UnhookWindowsHookEx(_recordingHookId);
@@ -163,26 +199,43 @@ public partial class SettingsWindow : Window
                 var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
                 uint vkCode = hookStruct.vkCode;
 
-                // Check for lone modifier keys
-                if (vkCode is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN or
-                    NativeMethods.VK_SHIFT or NativeMethods.VK_LSHIFT or NativeMethods.VK_RSHIFT or
-                    NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL or
-                    NativeMethods.VK_MENU or NativeMethods.VK_LMENU or NativeMethods.VK_RMENU)
+                // Handle modifier keys explicitly
+                if (vkCode is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
                 {
-                    // Suppress lone Win key so Start Menu does not pop up while recording
-                    if (vkCode is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
-                    {
-                        return (IntPtr)1;
-                    }
-                    return NativeMethods.CallNextHookEx(_recordingHookId, nCode, wParam, lParam);
+                    _isWinDown = true;
+                    ShowActiveModifiersDisplay();
+                    return (IntPtr)1; // Suppress lone Win key so Start Menu does not pop up
+                }
+                else if (vkCode is NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL)
+                {
+                    _isCtrlDown = true;
+                    ShowActiveModifiersDisplay();
+                    return (IntPtr)1;
+                }
+                else if (vkCode is NativeMethods.VK_SHIFT or NativeMethods.VK_LSHIFT or NativeMethods.VK_RSHIFT)
+                {
+                    _isShiftDown = true;
+                    ShowActiveModifiersDisplay();
+                    return (IntPtr)1;
+                }
+                else if (vkCode is NativeMethods.VK_MENU or NativeMethods.VK_LMENU or NativeMethods.VK_RMENU)
+                {
+                    _isAltDown = true;
+                    ShowActiveModifiersDisplay();
+                    return (IntPtr)1;
                 }
 
-                // A key was pressed. Detect modifier states via GetAsyncKeyState
-                bool win = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 ||
+                // A non-modifier key was pressed.
+                // Gather active modifiers from our explicit state tracking, with GetAsyncKeyState fallback
+                bool win = _isWinDown ||
+                           (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 ||
                            (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) & 0x8000) != 0;
-                bool ctrl = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0;
-                bool shift = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0;
-                bool alt = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0;
+                bool ctrl = _isCtrlDown ||
+                            (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0;
+                bool shift = _isShiftDown ||
+                             (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0;
+                bool alt = _isAltDown ||
+                           (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0;
 
                 var mods = new List<string>();
                 if (win) mods.Add("Win");
@@ -213,10 +266,24 @@ public partial class SettingsWindow : Window
             else if (msg == NativeMethods.WM_KEYUP || msg == NativeMethods.WM_SYSKEYUP)
             {
                 var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
-                if (hookStruct.vkCode is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
+                uint vkCode = hookStruct.vkCode;
+
+                if (vkCode is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
                 {
-                    // Suppress Start Menu trigger on Win release
-                    return (IntPtr)1;
+                    _isWinDown = false;
+                    return (IntPtr)1; // Suppress Start Menu trigger on Win release
+                }
+                else if (vkCode is NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL)
+                {
+                    _isCtrlDown = false;
+                }
+                else if (vkCode is NativeMethods.VK_SHIFT or NativeMethods.VK_LSHIFT or NativeMethods.VK_RSHIFT)
+                {
+                    _isShiftDown = false;
+                }
+                else if (vkCode is NativeMethods.VK_MENU or NativeMethods.VK_LMENU or NativeMethods.VK_RMENU)
+                {
+                    _isAltDown = false;
                 }
             }
         }
@@ -237,14 +304,18 @@ public partial class SettingsWindow : Window
             return;
         }
 
-        bool isWinDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 ||
+        bool isWinDown = _isWinDown ||
+                         (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 ||
                          (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) & 0x8000) != 0 ||
                          (Keyboard.Modifiers & ModifierKeys.Windows) == ModifierKeys.Windows;
-        bool isCtrlDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0 ||
+        bool isCtrlDown = _isCtrlDown ||
+                          (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0 ||
                           (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
-        bool isShiftDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0 ||
+        bool isShiftDown = _isShiftDown ||
+                           (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0 ||
                            (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
-        bool isAltDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0 ||
+        bool isAltDown = _isAltDown ||
+                         (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0 ||
                          (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt;
 
         var mods = new List<string>();

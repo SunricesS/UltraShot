@@ -19,7 +19,15 @@ public class HotkeyManager : IDisposable
     private bool _targetCtrl;
     private bool _targetShift;
     private bool _targetAlt;
+
+    // Explicit modifier tracking in the global hook
+    private bool _isWinDown;
+    private bool _isCtrlDown;
+    private bool _isShiftDown;
+    private bool _isAltDown;
+
     private bool _suppressNextKeyUp;
+    private bool _suppressNextWinKeyUp;
 
     public event Action? HotkeyPressed;
 
@@ -117,10 +125,16 @@ public class HotkeyManager : IDisposable
             _hookId = IntPtr.Zero;
         }
 
+        _isWinDown = false;
+        _isCtrlDown = false;
+        _isShiftDown = false;
+        _isAltDown = false;
+        _suppressNextKeyUp = false;
+        _suppressNextWinKeyUp = false;
+
         // Prevent delegate from being garbage collected
         _hookProc = HookCallback;
-        IntPtr hMod = NativeMethods.GetModuleHandle(IntPtr.Zero);
-        _hookId = NativeMethods.SetWindowsHookExW(NativeMethods.WH_KEYBOARD_LL, _hookProc, hMod, 0);
+        _hookId = NativeMethods.SetWindowsHookExW(NativeMethods.WH_KEYBOARD_LL, _hookProc, IntPtr.Zero, 0);
         return _hookId != IntPtr.Zero;
     }
 
@@ -138,7 +152,13 @@ public class HotkeyManager : IDisposable
             _hookId = IntPtr.Zero;
             _hookProc = null;
         }
+
+        _isWinDown = false;
+        _isCtrlDown = false;
+        _isShiftDown = false;
+        _isAltDown = false;
         _suppressNextKeyUp = false;
+        _suppressNextWinKeyUp = false;
     }
 
     private uint ParseVirtualKey(string keyStr)
@@ -167,13 +187,36 @@ public class HotkeyManager : IDisposable
             if (msg == NativeMethods.WM_KEYDOWN || msg == NativeMethods.WM_SYSKEYDOWN)
             {
                 var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
-                if (hookStruct.vkCode == _targetVk)
+                uint vk = hookStruct.vkCode;
+
+                if (vk is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
                 {
-                    bool winDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 ||
+                    _isWinDown = true;
+                }
+                else if (vk is NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL)
+                {
+                    _isCtrlDown = true;
+                }
+                else if (vk is NativeMethods.VK_SHIFT or NativeMethods.VK_LSHIFT or NativeMethods.VK_RSHIFT)
+                {
+                    _isShiftDown = true;
+                }
+                else if (vk is NativeMethods.VK_MENU or NativeMethods.VK_LMENU or NativeMethods.VK_RMENU)
+                {
+                    _isAltDown = true;
+                }
+
+                if (vk == _targetVk)
+                {
+                    bool winDown = _isWinDown ||
+                                   (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 ||
                                    (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) & 0x8000) != 0;
-                    bool ctrlDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0;
-                    bool shiftDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0;
-                    bool altDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0;
+                    bool ctrlDown = _isCtrlDown ||
+                                    (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0;
+                    bool shiftDown = _isShiftDown ||
+                                     (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0;
+                    bool altDown = _isAltDown ||
+                                   (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0;
 
                     if (winDown == _targetWin &&
                         ctrlDown == _targetCtrl &&
@@ -181,24 +224,50 @@ public class HotkeyManager : IDisposable
                         altDown == _targetAlt)
                     {
                         _suppressNextKeyUp = true;
+                        if (_targetWin)
+                        {
+                            _suppressNextWinKeyUp = true;
+                        }
+
                         Application.Current?.Dispatcher.BeginInvoke(() =>
                         {
                             HotkeyPressed?.Invoke();
                         });
-                        return (IntPtr)1; // Consume key, suppress Windows default tools (e.g. Snipping Tool)
+                        return (IntPtr)1; // Consume key, suppress Windows default tools (e.g. Snipping Tool / Search)
                     }
                 }
             }
             else if (msg == NativeMethods.WM_KEYUP || msg == NativeMethods.WM_SYSKEYUP)
             {
-                if (_suppressNextKeyUp)
+                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
+                uint vk = hookStruct.vkCode;
+
+                if (vk is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
                 {
-                    var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
-                    if (hookStruct.vkCode == _targetVk)
+                    _isWinDown = false;
+                    if (_suppressNextWinKeyUp)
                     {
-                        _suppressNextKeyUp = false;
-                        return (IntPtr)1;
+                        _suppressNextWinKeyUp = false;
+                        return (IntPtr)1; // Suppress Start Menu trigger on Win release after shortcut
                     }
+                }
+                else if (vk is NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL)
+                {
+                    _isCtrlDown = false;
+                }
+                else if (vk is NativeMethods.VK_SHIFT or NativeMethods.VK_LSHIFT or NativeMethods.VK_RSHIFT)
+                {
+                    _isShiftDown = false;
+                }
+                else if (vk is NativeMethods.VK_MENU or NativeMethods.VK_LMENU or NativeMethods.VK_RMENU)
+                {
+                    _isAltDown = false;
+                }
+
+                if (vk == _targetVk && _suppressNextKeyUp)
+                {
+                    _suppressNextKeyUp = false;
+                    return (IntPtr)1;
                 }
             }
         }
