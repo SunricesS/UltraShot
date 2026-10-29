@@ -12,6 +12,14 @@
     <AssemblyName>UltraShot</AssemblyName>
     <RootNamespace>UltraShot</RootNamespace>
     <ApplicationIcon>ico\UltraShot.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Authors>UltraShot</Authors>
+    <Company>UltraShot</Company>
+    <Product>UltraShot</Product>
+    <Description>Windows için Ultra Hızlı, Düşük Kaynak Tüketen Ekran Görüntüsü Alma ve Düzenleme Aracı</Description>
+    <Copyright>Copyright © 2026</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
