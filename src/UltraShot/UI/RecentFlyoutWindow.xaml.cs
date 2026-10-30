@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -82,6 +82,12 @@ public partial class RecentFlyoutWindow : Window
         e.Handled = true;
         if (sender is FrameworkElement { DataContext: ScreenshotItem item })
         {
+            if (item.IsConfirmOpen)
+            {
+                item.IsConfirmOpen = false;
+                return;
+            }
+
             Dismiss();
             OpenEditorRequested?.Invoke(item.FilePath);
         }
@@ -127,17 +133,46 @@ public partial class RecentFlyoutWindow : Window
         e.Handled = true;
         if (sender is FrameworkElement { Tag: ScreenshotItem item })
         {
-            var result = MessageBox.Show(
-                $"'{item.FileName}' dosyasını silmek istediğinize emin misiniz?",
-                "Silme Onayı",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            if (!SettingsManager.Current.ConfirmBeforeDelete)
             {
                 StorageService.DeleteScreenshot(item.FilePath);
                 RefreshScreenshots();
+                return;
             }
+
+            // Close any other open confirmation popups
+            if (ScreenshotsList.ItemsSource is IEnumerable<ScreenshotItem> items)
+            {
+                foreach (var other in items)
+                {
+                    if (other != item && other.IsConfirmOpen)
+                    {
+                        other.IsConfirmOpen = false;
+                    }
+                }
+            }
+
+            item.IsConfirmOpen = !item.IsConfirmOpen;
+        }
+    }
+
+    private void ConfirmDelete_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is FrameworkElement { Tag: ScreenshotItem item })
+        {
+            item.IsConfirmOpen = false;
+            StorageService.DeleteScreenshot(item.FilePath);
+            RefreshScreenshots();
+        }
+    }
+
+    private void CancelDelete_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is FrameworkElement { Tag: ScreenshotItem item })
+        {
+            item.IsConfirmOpen = false;
         }
     }
 }

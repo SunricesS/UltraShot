@@ -21,6 +21,7 @@ public class AppSettings
         set => AutoSaveScreenshot = !value;
     }
     public bool StartWithWindows { get; set; } = false;
+    public bool ConfirmBeforeDelete { get; set; } = true;
 
     public string ImageFormat { get; set; } = "PNG";
     public int JpegQuality { get; set; } = 90;

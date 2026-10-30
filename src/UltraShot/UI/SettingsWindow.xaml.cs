@@ -63,6 +63,7 @@ public partial class SettingsWindow : Window
         CopyClipboardCheckBox.IsChecked = settings.CopyImageToClipboard;
         PlaySoundCheckBox.IsChecked = settings.PlaySound;
         StartWithWindowsCheckBox.IsChecked = settings.StartWithWindows;
+        ConfirmDeleteCheckBox.IsChecked = settings.ConfirmBeforeDelete;
     }
 
     private void SaveOnlyToClipboard_Changed(object sender, RoutedEventArgs e)
@@ -386,6 +387,7 @@ public partial class SettingsWindow : Window
         settings.CopyImageToClipboard = CopyClipboardCheckBox.IsChecked ?? true;
         settings.PlaySound = PlaySoundCheckBox.IsChecked ?? false;
         settings.StartWithWindows = StartWithWindowsCheckBox.IsChecked ?? false;
+        settings.ConfirmBeforeDelete = ConfirmDeleteCheckBox.IsChecked ?? true;
 
         if (FormatComboBox.SelectedItem is System.Windows.Controls.ComboBoxItem item && item.Tag is string tag)
         {

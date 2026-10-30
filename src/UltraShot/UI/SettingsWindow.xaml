@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="UltraShot Ayarları"
         Icon="pack://application:,,,/UltraShot;component/ico/UltraShot.ico"
-        Width="460" Height="570"
+        Width="460" Height="595"
         WindowStartupLocation="CenterScreen"
         Background="#1E1E1E"
         Foreground="#EEEEEE"
@@ -269,6 +269,7 @@
                 <CheckBox x:Name="CopyClipboardCheckBox" Content="Alanı seçtiğim anda panoya kopyala"/>
                 <CheckBox x:Name="PlaySoundCheckBox" Content="Çekim sonrası deklanşör sesi çal"/>
                 <CheckBox x:Name="StartWithWindowsCheckBox" Content="Windows başladığında otomatik çalıştır"/>
+                <CheckBox x:Name="ConfirmDeleteCheckBox" Content="Son ekran görüntülerinde silerken onay sor"/>
             </StackPanel>
         </ScrollViewer>
 

@@ -1,10 +1,27 @@
-﻿using System.IO;
+using System.ComponentModel;
+using System.IO;
 using System.Windows.Media.Imaging;
 
 namespace UltraShot.Models;
 
-public class ScreenshotItem
+public class ScreenshotItem : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private bool _isConfirmOpen;
+    public bool IsConfirmOpen
+    {
+        get => _isConfirmOpen;
+        set
+        {
+            if (_isConfirmOpen != value)
+            {
+                _isConfirmOpen = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsConfirmOpen)));
+            }
+        }
+    }
+
     public string FilePath { get; set; } = string.Empty;
     public string FileName => Path.GetFileName(FilePath);
     public DateTime CreatedAt { get; set; }
@@ -57,4 +74,3 @@ public class ScreenshotItem
         }
     }
 }
-
