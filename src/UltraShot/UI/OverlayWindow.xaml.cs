@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -161,7 +161,7 @@ public partial class OverlayWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Kırpma hatası: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Crop error: {ex.Message}");
         }
         finally
         {

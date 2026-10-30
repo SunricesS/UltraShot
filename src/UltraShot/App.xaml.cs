@@ -24,7 +24,7 @@ public partial class App : Application
 
         if (!isNewInstance)
         {
-            MessageBox.Show("UltraShot zaten arka planda çalışıyor! Sistem tepsisindeki küçük simgeden erişebilirsiniz.", 
+            MessageBox.Show("UltraShot is already running in the background! You can access it via the system tray icon.", 
                 "UltraShot", MessageBoxButton.OK, MessageBoxImage.Information);
             Current.Shutdown();
             return;
@@ -36,7 +36,7 @@ public partial class App : Application
         DispatcherUnhandledException += (sender, args) =>
         {
             args.Handled = true;
-            MessageBox.Show($"Bir işlem sırasında hata oluştu:\n{args.Exception.Message}", 
+            MessageBox.Show($"An error occurred during an operation:\n{args.Exception.Message}", 
                 "UltraShot", MessageBoxButton.OK, MessageBoxImage.Warning);
         };
 
@@ -44,7 +44,7 @@ public partial class App : Application
         {
             if (args.ExceptionObject is Exception ex)
             {
-                MessageBox.Show($"Beklenmeyen hata:\n{ex.Message}", "UltraShot", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Unexpected error:\n{ex.Message}", "UltraShot", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         };
 
@@ -93,7 +93,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             _isCapturing = false;
-            Debug.WriteLine($"Ekran yakalama hatası: {ex.Message}");
+            Debug.WriteLine($"Screen capture error: {ex.Message}");
         }
     }
 
@@ -112,7 +112,7 @@ public partial class App : Application
             }
             else if (!SettingsManager.Current.OpenFlyoutAfterCapture)
             {
-                _trayManager?.ShowNotification("UltraShot", "Ekran görüntüsü panoya kopyalandı (Geçici mod).");
+                _trayManager?.ShowNotification("UltraShot", "Screenshot copied to clipboard (Temporary mode).");
             }
 
             if (SettingsManager.Current.OpenFlyoutAfterCapture)
@@ -125,7 +125,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Görsel işleme hatası: {ex.Message}");
+            Debug.WriteLine($"Image processing error: {ex.Message}");
         }
     }
 
@@ -149,7 +149,7 @@ public partial class App : Application
         {
             if (!System.IO.File.Exists(filePath))
             {
-                MessageBox.Show("Düzenlenmek istenen görsel bulunamadı.", "UltraShot", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("The selected image file was not found.", "UltraShot", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -160,7 +160,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Düzenleyici açılırken hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Error opening editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

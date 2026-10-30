@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using Microsoft.Win32;
 using UltraShot.Models;
@@ -34,7 +34,7 @@ public static class SettingsManager
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Ayarlar yüklenemedi: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Failed to load settings: {ex.Message}");
         }
 
         // Ensure save directory exists
@@ -64,7 +64,7 @@ public static class SettingsManager
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Ayarlar kaydedilemedi: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Failed to save settings: {ex.Message}");
         }
     }
 
@@ -95,7 +95,7 @@ public static class SettingsManager
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Başlangıç kaydı güncellenemedi: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Failed to update startup registry: {ex.Message}");
         }
     }
 }

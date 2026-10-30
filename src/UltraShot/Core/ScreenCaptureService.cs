@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
@@ -76,7 +76,7 @@ public static class ScreenCaptureService
 
         if (width <= 0 || height <= 0)
         {
-            throw new ArgumentException("Kırpılacak alan geçerli değil.");
+            throw new ArgumentException("Invalid crop rectangle.");
         }
 
         var cropped = new CroppedBitmap(source, new Int32Rect(x, y, width, height));

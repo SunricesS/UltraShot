@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
@@ -79,12 +79,12 @@ public partial class EditorWindow : Window
                 if (DimensionsStatusText != null)
                     DimensionsStatusText.Text = $"{_originalBitmap.PixelWidth} × {_originalBitmap.PixelHeight}";
                 if (FilePathStatusText != null)
-                    FilePathStatusText.Text = !string.IsNullOrEmpty(_filePath) ? System.IO.Path.GetFileName(_filePath) : "Yeni Ekran Görüntüsü";
+                    FilePathStatusText.Text = !string.IsNullOrEmpty(_filePath) ? System.IO.Path.GetFileName(_filePath) : "New Screenshot";
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Resim yüklenemedi: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Failed to load image: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -142,7 +142,7 @@ public partial class EditorWindow : Window
 
             if (ToolStatusText != null)
             {
-                ToolStatusText.Text = $"{_currentTool} aracı aktif";
+                ToolStatusText.Text = $"{_currentTool} tool active";
             }
             UpdateDrawingAttributes();
         }
@@ -296,7 +296,7 @@ public partial class EditorWindow : Window
     {
         if (_cropRect.Width < 10 || _cropRect.Height < 10)
         {
-            MessageBox.Show("Lütfen kırpmak için görsel üzerinde geçerli bir alan seçin.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Please select a valid region on the image to crop.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -363,7 +363,7 @@ public partial class EditorWindow : Window
     {
         var bitmap = RenderToBitmap();
         Clipboard.SetImage(bitmap);
-        ToolStatusText.Text = "Görsel panoya kopyalandı! (Ctrl+V ile yapıştırabilirsiniz)";
+        ToolStatusText.Text = "Image copied to clipboard! (Press Ctrl+V to paste)";
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -376,7 +376,7 @@ public partial class EditorWindow : Window
         }
 
         StorageService.SaveBitmapDirect(bitmap, _filePath);
-        ToolStatusText.Text = $"Kaydedildi: {System.IO.Path.GetFileName(_filePath)}";
+        ToolStatusText.Text = $"Saved: {System.IO.Path.GetFileName(_filePath)}";
     }
 
     private void SaveAs_Click(object sender, RoutedEventArgs e)
@@ -384,7 +384,7 @@ public partial class EditorWindow : Window
         var ext = SettingsManager.Current.GetFileExtension();
         var sfd = new SaveFileDialog
         {
-            Filter = "PNG Resmi (*.png)|*.png|JPEG Resmi (*.jpg)|*.jpg|Bitmap Resmi (*.bmp)|*.bmp",
+            Filter = "PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg|Bitmap Image (*.bmp)|*.bmp",
             FileName = !string.IsNullOrEmpty(_filePath) ? System.IO.Path.GetFileName(_filePath) : $"UltraShot_Screenshot{ext}",
             DefaultExt = ext
         };
@@ -395,7 +395,7 @@ public partial class EditorWindow : Window
             StorageService.SaveBitmapDirect(bitmap, sfd.FileName);
             _filePath = sfd.FileName;
             FilePathStatusText.Text = System.IO.Path.GetFileName(_filePath);
-            ToolStatusText.Text = $"Farklı kaydedildi: {System.IO.Path.GetFileName(_filePath)}";
+            ToolStatusText.Text = $"Saved as: {System.IO.Path.GetFileName(_filePath)}";
         }
     }
 

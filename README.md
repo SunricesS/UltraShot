@@ -1,117 +1,70 @@
-<div align="center">
+# UltraShot 📸
+**Ultra-fast, low-resource screenshot and annotation tool for Windows**
 
-#  UltraShot
-
-**ultra-lightweight Windows screenshot tool & annotation editor.**  
-
-
-[![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-blue?logo=windows)](https://microsoft.com/windows)
-[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Portable](https://img.shields.io/badge/Release-Single%20File%20Portable-orange)](releases/)
-
-</div>
+UltraShot is a high-performance, lightweight Windows screenshot tool engineered with .NET 10, WPF, and native Win32 APIs. It provides an instant alternative to Windows Snipping Tool, eliminating lag, heavy memory usage, and background overhead.
 
 ---
 
-##  Highlights
+## ✨ Key Features
 
-*  **Zero-Lag Overlay (< 10 ms):** Directly captures the virtual desktop using low-level Win32 GDI `BitBlt` calls. No UWP/WinRT bloat, no 1-2 second startup lag.
-*  **Instant Clipboard Copy:** The moment you release your mouse after selecting an area, the image is synchronously placed onto your Windows Clipboard (`Ctrl+V` anywhere immediately).
-*  **Minimal Resource Footprint (~25 MB RAM, 0% CPU):** Pure event-driven Windows hotkey messaging (`WM_HOTKEY`). Automatic working-set memory trimming when idling in the system tray.
-*  **Full Screen, Multi-Monitor & DPI-Aware:** Compatible with borderless fullscreen games, multiple monitors with different DPI scaling (100%, 125%, 150%, 4K).
-*  **Automated Unique Naming:** Screenshots are automatically saved to your `Pictures\UltraShot` folder with millisecond-precision timestamps (`UltraShot_yyyy-MM-dd_HH-mm-ss-fff.png`).
-*  **System Tray Gallery / Drawer:**
-  * Shows recent screenshots in a sleek bottom-right floating card.
-  * Direct thumbnail previews, dimensions, and quick copy/edit/delete buttons.
-  * **Tray Right-Click Menu:** "Open Screenshots Folder", "Settings & Hotkey", "Recent Screenshots", and "Exit".
-* 🎨 **Integrated Annotation & Cropping Editor:**
-  *  **Pen:** Freehand drawing with adjustable stroke width and vibrant color palette.
-  *  **Highlighter:** Translucent marker for highlighting text and documents.
-  *  **Arrow & ⬜ Shapes:** Add crisp direction arrows and highlight boxes.
-  *  **Crop Tool:** Interactively refine and crop screenshots.
-  *  **Undo (Ctrl+Z):** Revert actions step by step.
-  *  **Save As:** Export to PNG, JPG, or BMP.
-*  **Customizable Global Hotkey & Windows Key (`Win`) Support:** Change the shortcut in settings simply by pressing your preferred key combination (e.g., `Ctrl+Shift+S`, `Win+Shift+S`, `PrintScreen`, `Win+A`). Low-level hardware hook allows seamlessly replacing Windows' default Snipping Tool with zero lag!
-
----
-
-##  Download & Portability
-
-No installation or prerequisites required! UltraShot can be downloaded as a **Self-Contained Single-File Executable**:
-* Works out of the box on any 64-bit Windows 10 / 11 PC.
-* **Does not require .NET SDK or .NET Runtime to be installed.**
-
+- ⚡ **Ultra-Fast Desktop Capture (< 10 ms):** Direct Win32 GDI `BitBlt` virtual desktop snapshot executed immediately upon hotkey trigger, freezing screens seamlessly with zero delay.
+- 📋 **Instant Clipboard Copy:** Microseconds after you release the left mouse button (`MouseUp`), the captured region is written directly to the Windows Clipboard ready for immediate `Ctrl + V` pasting.
+- 🪶 **Minimal Resource Footprint (~15–20 MB RAM, 0% CPU):** Operates on an event-driven Windows message loop (`WH_KEYBOARD_LL` / `WM_HOTKEY`) with no polling timers. Memory is automatically trimmed after every operation.
+- ⌨️ **Full Windows Key Combination Support:** Supports custom shortcuts combining the Windows key (e.g. `Win + S`, `Win + Shift + S`, `Win + A`, `PrintScreen`) without Start menu interference or sticky key issues.
+- 🖼️ **Configurable Image Formats & Compression:**
+  - **PNG:** Lossless clarity (Default).
+  - **JPEG:** High-efficiency compression with customizable quality level (10%–100%) to drastically reduce file sizes.
+  - **BMP:** Uncompressed raw bitmap.
+- 📋 **Temporary Mode (Clipboard-Only):** Toggle to capture temporary screenshots copied only to clipboard without saving files to disk.
+- 🔔 **Recent Screenshots Drawer & In-Place Confirmation:**
+  - Quick flyout panel displaying recent screenshots with thumbnails, creation timestamps, and dimensions.
+  - Quick action buttons to Edit, Copy, and Delete.
+  - Sleek, theme-consistent in-place delete confirmation with optional prompt setting.
+- 🎨 **Built-In Image Editor:**
+  - ✏️ **Pen:** Freehand drawing with custom colors and stroke thicknesses.
+  - 🖍️ **Highlighter:** Semi-transparent highlighter for text and points of interest.
+  - ➡️ **Arrow:** Crisp directional pointer arrows.
+  - ⬜ **Rectangle:** Clean boundary box framing.
+  - ✂️ **Crop:** Re-crop screenshots with real-time dashed guides.
+  - ↩️ **Undo (Ctrl + Z):** Step-by-step history undo.
+  - 💾 **Save & Save As:** Quickly overwrite or export in PNG, JPEG, or BMP formats.
+- 🖥️ **Multi-Monitor & DPI Aware:** Full `PerMonitorV2` support across mixed-DPI multi-monitor setups and 4K displays.
 
 ---
 
-##  Keyboard Shortcuts
+## 🚀 Getting Started
 
-| Shortcut | Action |
-|---|---|
-| `Ctrl + Shift + S` (Default) | Trigger instant screen selection tool |
-| `Left Mouse Drag` | Select screen region |
-| `Mouse Release` | Instant clipboard copy & auto-save |
-| `ESC` or `Right Click` | Cancel selection overlay |
-| `Ctrl + Z` (In Editor) | Undo last drawing stroke / shape |
-| `Ctrl + C` (In Editor) | Copy edited image to clipboard |
-| `Ctrl + S` (In Editor) | Save / overwrite image |
-
----
-
-##  Building from Source
-
-### Requirements
-* [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-* Windows 10 (1809+) or Windows 11
-
-### 1. Standard Framework-Dependent Build (Ultra-compact ~160 KB)
+### Running the Pre-Built Executable
+The compiled application is available in the `publish` directory:
 ```powershell
-dotnet build -c Release
-dotnet publish -c Release -o ./publish
+d:\Projeler\UltraShoot\publish\UltraShot.exe
 ```
 
-### 2. Standalone Portable Build (Runs on any PC without .NET runtime)
-```powershell
-dotnet publish src/UltraShot/UltraShot.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o ./publish-standalone
-```
+### Default Shortcuts
+- **Ctrl + Shift + S** (or configured custom hotkey): Instantly initiates screen capture.
+- **Left Mouse Click & Drag:** Select region. Releasing copies the image to clipboard and saves it.
+- **ESC or Right Click:** Cancel screen selection immediately.
+- **Left Click System Tray Icon:** Opens the Recent Screenshots panel.
+- **Right Click System Tray Icon:** Context menu (*Take Screenshot*, *Recent Screenshots*, *Open Screenshots Folder*, *Save to Clipboard Only*, *Settings & Hotkey*, *Exit*).
 
 ---
 
-##  Project Architecture / Proje Yapısı
+## 🛠️ Building from Source
 
-```
-UltraShot/
-├── src/
-│   └── UltraShot/
-│       ├── Core/
-│       │   ├── NativeMethods.cs         # Win32 GDI, BitBlt, RegisterHotKey interop
-│       │   ├── HotkeyManager.cs         # Global hotkey message window hook
-│       │   ├── ScreenCaptureService.cs  # Multi-monitor DPI-aware screen capture
-│       │   ├── StorageService.cs        # Lock-free file I/O & naming engine
-│       │   └── SettingsManager.cs       # JSON configuration & Windows startup registry
-│       ├── Models/
-│       │   ├── AppSettings.cs           # User configuration model
-│       │   └── ScreenshotItem.cs        # Gallery thumbnail & metadata model
-│       ├── UI/
-│       │   ├── OverlayWindow.xaml       # Instant darkened cutout selection window
-│       │   ├── RecentFlyoutWindow.xaml  # Bottom-right tray drawer gallery
-│       │   ├── EditorWindow.xaml        # Drawing, arrow, crop & Save As editor
-│       │   ├── SettingsWindow.xaml      # Interactive hotkey recorder & settings
-│       │   └── TrayIconManager.cs       # System tray icon & context menus
-│       ├── App.xaml / App.xaml.cs       # Single-instance mutex, app lifecycle
-│       └── app.manifest                 # PerMonitorV2 high-DPI configuration
-├── .github/
-│   └── workflows/
-│       └── build-and-release.yml        # Automated CI/CD release workflow
-├── releases/                            # Standalone portable binaries
-├── .gitignore
-├── LICENSE
-└── README.md
+### Prerequisites
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download)
+- Windows 10 / 11 (x64 / arm64)
+
+### Build Commands
+```powershell
+# Restore dependencies and build in Release mode
+dotnet build UltraShot.slnx -c Release
+
+# Publish self-contained single-file binary
+dotnet publish src\UltraShot\UltraShot.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish-standalone
 ```
 
 ---
 
 ## 📄 License
-This project is licensed under the [MIT License](LICENSE).
-
+UltraShot is released under the MIT License.

@@ -27,11 +27,11 @@ public class TrayIconManager : IDisposable
     {
         var contextMenu = new ContextMenuStrip();
 
-        _captureMenuItem = new ToolStripMenuItem("📷 Ekran Görüntüsü Al", null, (s, e) => CaptureTriggered?.Invoke());
-        _recentMenuItem = new ToolStripMenuItem("🖼️ Son Ekran Görüntüleri", null, (s, e) => RecentScreenshotsTriggered?.Invoke());
-        _openFolderMenuItem = new ToolStripMenuItem("📁 Ekran Görüntüleri Klasörünü Aç", null, (s, e) => OpenFolderTriggered?.Invoke());
+        _captureMenuItem = new ToolStripMenuItem("📷 Take Screenshot", null, (s, e) => CaptureTriggered?.Invoke());
+        _recentMenuItem = new ToolStripMenuItem("🖼️ Recent Screenshots", null, (s, e) => RecentScreenshotsTriggered?.Invoke());
+        _openFolderMenuItem = new ToolStripMenuItem("📁 Open Screenshots Folder", null, (s, e) => OpenFolderTriggered?.Invoke());
         
-        _temporaryModeMenuItem = new ToolStripMenuItem("📋 Yalnızca Panoya Kaydet (Geçici)", null, (s, e) =>
+        _temporaryModeMenuItem = new ToolStripMenuItem("📋 Save to Clipboard Only (Temporary)", null, (s, e) =>
         {
             if (s is ToolStripMenuItem mi)
             {
@@ -42,8 +42,8 @@ public class TrayIconManager : IDisposable
         });
         _temporaryModeMenuItem.CheckOnClick = true;
 
-        _settingsMenuItem = new ToolStripMenuItem("⚙️ Kısayol ve Ayarlar", null, (s, e) => SettingsTriggered?.Invoke());
-        _exitMenuItem = new ToolStripMenuItem("❌ Çıkış", null, (s, e) => ExitTriggered?.Invoke());
+        _settingsMenuItem = new ToolStripMenuItem("⚙️ Settings & Hotkey", null, (s, e) => SettingsTriggered?.Invoke());
+        _exitMenuItem = new ToolStripMenuItem("❌ Exit", null, (s, e) => ExitTriggered?.Invoke());
 
         contextMenu.Items.Add(_captureMenuItem);
         contextMenu.Items.Add(_recentMenuItem);
@@ -76,7 +76,7 @@ public class TrayIconManager : IDisposable
     public void UpdateDisplayStrings()
     {
         var hotkeyStr = SettingsManager.Current.GetHotkeyDisplayString();
-        _captureMenuItem.Text = $"📷 Ekran Görüntüsü Al ({hotkeyStr})";
+        _captureMenuItem.Text = $"📷 Take Screenshot ({hotkeyStr})";
         _notifyIcon.Text = $"UltraShot ({hotkeyStr})";
         _temporaryModeMenuItem.Checked = SettingsManager.Current.SaveOnlyToClipboard;
     }
@@ -123,7 +123,7 @@ public class TrayIconManager : IDisposable
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Simge yükleme hatası: {ex.Message}");
+            Debug.WriteLine($"Icon load error: {ex.Message}");
         }
 
         return GenerateFallbackIcon();

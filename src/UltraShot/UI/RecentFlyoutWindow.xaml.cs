@@ -47,12 +47,12 @@ public partial class RecentFlyoutWindow : Window
         if (items.Count == 0)
         {
             EmptyNotice.Visibility = Visibility.Visible;
-            CountText.Text = "Ekran görüntüsü yok";
+            CountText.Text = "No screenshots";
         }
         else
         {
             EmptyNotice.Visibility = Visibility.Collapsed;
-            CountText.Text = $"Son {items.Count} ekran görüntüsü";
+            CountText.Text = $"Recent {items.Count} screenshots";
         }
     }
 
@@ -123,7 +123,7 @@ public partial class RecentFlyoutWindow : Window
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Kopyalanamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Failed to copy: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -104,12 +104,12 @@ public partial class SettingsWindow : Window
 
         if (isJpeg)
         {
-            QualityHintText.Text = "* %90 kalite gözle görülür kayıp olmadan dosya boyutunu ciddi oranda düşürür.";
+            QualityHintText.Text = "* 90% quality drastically reduces file size with virtually no noticeable loss.";
             QualityHintText.Foreground = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#888888")!;
         }
         else
         {
-            QualityHintText.Text = "* Bu ayar yalnızca JPEG formatı seçildiğinde etkilidir. PNG ve BMP kayıpsız formatlardır.";
+            QualityHintText.Text = "* This setting is only effective when JPEG format is selected. PNG and BMP are lossless formats.";
             QualityHintText.Foreground = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#666666")!;
         }
     }
@@ -152,7 +152,7 @@ public partial class SettingsWindow : Window
 
     private void HotkeyTextBox_GotFocus(object sender, RoutedEventArgs e)
     {
-        HotkeyTextBox.Text = "Tuş kombinasyonuna basın...";
+        HotkeyTextBox.Text = "Press key combination...";
         StartRecordingHook();
     }
 
@@ -362,7 +362,7 @@ public partial class SettingsWindow : Window
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description = "Ekran görüntülerinin kaydedileceği klasörü seçin",
+            Description = "Select folder to save screenshots",
             SelectedPath = SaveFolderTextBox.Text,
             UseDescriptionForTitle = true
         };

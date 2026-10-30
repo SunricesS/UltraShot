@@ -1,7 +1,7 @@
 <Window x:Class="UltraShot.UI.RecentFlyoutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Son Ekran Görüntüleri"
+        Title="Recent Screenshots"
         Width="360" Height="500"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -144,17 +144,17 @@
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="📸" FontSize="15" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Son Ekran Görüntüleri" Foreground="#FFFFFF" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="Recent Screenshots" Foreground="#FFFFFF" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Style="{StaticResource IconButtonStyle}" ToolTip="Klasörü Aç" Click="OpenFolder_Click">
+                        <Button Style="{StaticResource IconButtonStyle}" ToolTip="Open Folder" Click="OpenFolder_Click">
                             <TextBlock Text="📁" FontSize="13"/>
                         </Button>
-                        <Button Style="{StaticResource IconButtonStyle}" ToolTip="Ayarlar" Click="OpenSettings_Click">
+                        <Button Style="{StaticResource IconButtonStyle}" ToolTip="Settings" Click="OpenSettings_Click">
                             <TextBlock Text="⚙️" FontSize="13"/>
                         </Button>
-                        <Button Style="{StaticResource IconButtonStyle}" ToolTip="Kapat" Click="Close_Click">
+                        <Button Style="{StaticResource IconButtonStyle}" ToolTip="Close" Click="Close_Click">
                             <TextBlock Text="✕" FontSize="12" FontWeight="Bold"/>
                         </Button>
                     </StackPanel>
@@ -212,13 +212,13 @@
                                         <!-- Quick Action Buttons -->
                                         <Grid Grid.Column="2" VerticalAlignment="Center">
                                             <StackPanel>
-                                                <Button Style="{StaticResource IconButtonStyle}" ToolTip="Düzenle / Çizim Yap" Click="EditItem_Click" Tag="{Binding}">
+                                                <Button Style="{StaticResource IconButtonStyle}" ToolTip="Edit / Annotate" Click="EditItem_Click" Tag="{Binding}">
                                                     <TextBlock Text="✏️" FontSize="12"/>
                                                 </Button>
-                                                <Button Style="{StaticResource IconButtonStyle}" ToolTip="Panoya Kopyala" Click="CopyItem_Click" Tag="{Binding}">
+                                                <Button Style="{StaticResource IconButtonStyle}" ToolTip="Copy to Clipboard" Click="CopyItem_Click" Tag="{Binding}">
                                                     <TextBlock Text="📋" FontSize="12"/>
                                                 </Button>
-                                                <Button x:Name="DeleteBtn" Style="{StaticResource IconButtonStyle}" ToolTip="Sil" Click="DeleteItem_Click" Tag="{Binding}">
+                                                <Button x:Name="DeleteBtn" Style="{StaticResource IconButtonStyle}" ToolTip="Delete" Click="DeleteItem_Click" Tag="{Binding}">
                                                     <TextBlock Text="🗑️" FontSize="12"/>
                                                 </Button>
                                             </StackPanel>
@@ -237,9 +237,9 @@
                                                         <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="3" Opacity="0.6"/>
                                                     </Border.Effect>
                                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                        <TextBlock Text="Silinsin mi?" Foreground="#FFFFFF" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                        <Button Content="Sil" Style="{StaticResource DangerButtonStyle}" Click="ConfirmDelete_Click" Tag="{Binding}" Margin="0,0,5,0"/>
-                                                        <Button Content="İptal" Style="{StaticResource CancelButtonStyle}" Click="CancelDelete_Click" Tag="{Binding}"/>
+                                                        <TextBlock Text="Delete?" Foreground="#FFFFFF" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                        <Button Content="Delete" Style="{StaticResource DangerButtonStyle}" Click="ConfirmDelete_Click" Tag="{Binding}" Margin="0,0,5,0"/>
+                                                        <Button Content="Cancel" Style="{StaticResource CancelButtonStyle}" Click="CancelDelete_Click" Tag="{Binding}"/>
                                                     </StackPanel>
                                                 </Border>
                                             </Popup>
@@ -253,8 +253,8 @@
                     <!-- Empty state notice -->
                     <StackPanel x:Name="EmptyNotice" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20" Visibility="Collapsed">
                         <TextBlock Text="📷" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                        <TextBlock Text="Henüz ekran görüntüsü yok" Foreground="#CCCCCC" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Kısayola basarak ilk ekran görüntünüzü alın." Foreground="#888888" FontSize="11" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                        <TextBlock Text="No screenshots yet" Foreground="#CCCCCC" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Press the hotkey to take your first screenshot." Foreground="#888888" FontSize="11" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </ScrollViewer>
@@ -262,10 +262,10 @@
             <!-- Footer -->
             <Border Grid.Row="2" Background="#252526" CornerRadius="0,0,9,9" Padding="10,8" BorderBrush="#333337" BorderThickness="0,1,0,0">
                 <Grid>
-                    <TextBlock x:Name="CountText" Text="Toplam 0 ekran görüntüsü" Foreground="#888888" FontSize="11" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="CountText" Text="Total 0 screenshots" Foreground="#888888" FontSize="11" VerticalAlignment="Center"/>
                     <Button Style="{StaticResource ActionButtonStyle}" HorizontalAlignment="Right" Click="OpenFolder_Click">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📁 Klasörde Göster" FontSize="11"/>
+                            <TextBlock Text="📁 Show in Folder" FontSize="11"/>
                         </StackPanel>
                     </Button>
                 </Grid>

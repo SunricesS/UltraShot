@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Media.Imaging;
 using UltraShot.Models;
@@ -114,7 +114,7 @@ public static class StorageService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Son ekran görüntüleri alınırken hata: {ex.Message}");
+            Debug.WriteLine($"Failed to retrieve recent screenshots: {ex.Message}");
         }
 
         return list;
@@ -131,7 +131,7 @@ public static class StorageService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Dosya silinirken hata: {ex.Message}");
+            Debug.WriteLine($"Failed to delete file: {ex.Message}");
         }
     }
 
@@ -166,7 +166,7 @@ public static class StorageService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Klasör açılamadı: {ex.Message}");
+            Debug.WriteLine($"Failed to open folder: {ex.Message}");
         }
     }
 }

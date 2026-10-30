@@ -1,7 +1,7 @@
 <Window x:Class="UltraShot.UI.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="UltraShot Ayarları"
+        Title="UltraShot Settings"
         Icon="pack://application:,,,/UltraShot;component/ico/UltraShot.ico"
         Width="460" Height="595"
         WindowStartupLocation="CenterScreen"
@@ -189,15 +189,15 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="⚙️ UltraShot Tercihleri" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF"/>
-            <TextBlock Text="Kısayol ve genel davranış ayarlarını özelleştirin." FontSize="12" Foreground="#888888" Margin="0,4,0,0"/>
+            <TextBlock Text="⚙️ UltraShot Preferences" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF"/>
+            <TextBlock Text="Customize hotkey and general behavior settings." FontSize="12" Foreground="#888888" Margin="0,4,0,0"/>
         </StackPanel>
 
         <!-- Settings Form -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <!-- Hotkey setting -->
-                <TextBlock Text="Ekran Alıntısı Kısayolu" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
+                <TextBlock Text="Capture Hotkey" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
                 <Grid Margin="0,0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -208,15 +208,15 @@
                              PreviewKeyDown="HotkeyTextBox_PreviewKeyDown" 
                              GotFocus="HotkeyTextBox_GotFocus" 
                              LostFocus="HotkeyTextBox_LostFocus"/>
-                    <Button Grid.Column="1" Style="{StaticResource SecondaryBtnStyle}" Content="Varsayılan Yap" 
+                    <Button Grid.Column="1" Style="{StaticResource SecondaryBtnStyle}" Content="Reset to Default" 
                             Margin="8,0,0,0" Click="ResetHotkey_Click"/>
                 </Grid>
 
-                <TextBlock Text="* Kısayolu değiştirmek için kutuya tıklayın ve klavyenizdeki tuşlara basın (örn: Ctrl+Shift+S veya PrintScreen)." 
+                <TextBlock Text="* Click the box and press keys on your keyboard to change hotkey (e.g. Ctrl+Shift+S or PrintScreen)." 
                            FontSize="11" Foreground="#777777" TextWrapping="Wrap" Margin="0,-10,0,16"/>
 
                 <!-- Save Folder setting -->
-                <TextBlock Text="Ekran Görüntüleri Klasörü" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
+                <TextBlock Text="Screenshots Folder" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
                 <Grid Margin="0,0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -224,20 +224,20 @@
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="SaveFolderTextBox" IsReadOnly="True" Background="#252526" Foreground="#DDDDDD" 
                              Padding="10,8" BorderBrush="#444447"/>
-                    <Button Grid.Column="1" Style="{StaticResource SecondaryBtnStyle}" Content="Gözat..." 
+                    <Button Grid.Column="1" Style="{StaticResource SecondaryBtnStyle}" Content="Browse..." 
                             Margin="8,0,0,0" Click="BrowseFolder_Click"/>
                 </Grid>
 
                 <!-- Format setting -->
-                <TextBlock Text="Ekran Görüntüsü Formatı" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
+                <TextBlock Text="Image Format" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
                 <ComboBox x:Name="FormatComboBox" Margin="0,0,0,14" SelectionChanged="FormatComboBox_SelectionChanged">
-                    <ComboBoxItem Content="PNG (*.png) - Kayıpsız Netlik (Önerilen)" Tag="PNG"/>
-                    <ComboBoxItem Content="JPEG (*.jpg) - Sıkıştırılmış / Düşük Boyut" Tag="JPEG"/>
-                    <ComboBoxItem Content="BMP (*.bmp) - Sıkıştırmasız Ham Bitmap" Tag="BMP"/>
+                    <ComboBoxItem Content="PNG (*.png) - Lossless Clarity (Recommended)" Tag="PNG"/>
+                    <ComboBoxItem Content="JPEG (*.jpg) - Compressed / Small File Size" Tag="JPEG"/>
+                    <ComboBoxItem Content="BMP (*.bmp) - Uncompressed Raw Bitmap" Tag="BMP"/>
                 </ComboBox>
 
-                <!-- Gelişmiş Ayarlar (Advanced Settings) Expander -->
-                <Expander Header="⚙️ Gelişmiş Ayarlar" Foreground="#00D2FF" FontWeight="SemiBold" Margin="0,0,0,16">
+                <!-- Advanced Settings Expander -->
+                <Expander Header="⚙️ Advanced Settings" Foreground="#00D2FF" FontWeight="SemiBold" Margin="0,0,0,16">
                     <Border Background="#252526" BorderBrush="#333337" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,6,0,0">
                         <StackPanel>
                             <Grid Margin="0,0,0,6">
@@ -245,39 +245,39 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="JPEG Kalite &amp; Sıkıştırma Oranı:" Foreground="#DDDDDD" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="JPEG Quality &amp; Compression Level:" Foreground="#DDDDDD" FontSize="12" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="QualityPercentText" Grid.Column="1" Text="%90" Foreground="#00D2FF" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
                             </Grid>
                             
                             <Slider x:Name="QualitySlider" Minimum="10" Maximum="100" Value="90" SmallChange="1" LargeChange="10"
                                     IsSnapToTickEnabled="True" TickFrequency="5" ValueChanged="QualitySlider_ValueChanged" Margin="0,4,0,8"/>
                             
-                            <TextBlock x:Name="QualityHintText" Text="* %90 kalite gözle görülür kayıp olmadan dosya boyutunu ciddi oranda düşürür. (Yalnızca JPEG formatında aktiftir)" 
+                            <TextBlock x:Name="QualityHintText" Text="* 90% quality drastically reduces file size with virtually no noticeable loss. (Active only for JPEG format)" 
                                        FontSize="11" Foreground="#888888" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
                 </Expander>
 
                 <!-- Checkboxes -->
-                <TextBlock Text="Davranışlar" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
-                <CheckBox x:Name="SaveOnlyToClipboardCheckBox" Content="Yalnızca panoya kaydet (Geçici mod: Diske kaydetmez)" 
+                <TextBlock Text="Behaviors" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
+                <CheckBox x:Name="SaveOnlyToClipboardCheckBox" Content="Save only to clipboard (Temporary mode: Do not save to disk)" 
                           Checked="SaveOnlyToClipboard_Changed" Unchecked="SaveOnlyToClipboard_Changed"/>
                 <TextBlock x:Name="TemporaryModeHintText" 
-                           Text="* Geçici modda aldığınız ekran alıntıları diskinizde yer kaplamaz, doğrudan panoya kopyalanır." 
+                           Text="* Screenshots taken in temporary mode do not take disk space; they are copied directly to clipboard." 
                            FontSize="11" Foreground="#00D2FF" TextWrapping="Wrap" Margin="20,-2,0,8" Visibility="Collapsed"/>
-                <CheckBox x:Name="OpenFlyoutCheckBox" Content="Ekran görüntüsü alındığında son çekilenler panelini aç"/>
-                <CheckBox x:Name="CopyClipboardCheckBox" Content="Alanı seçtiğim anda panoya kopyala"/>
-                <CheckBox x:Name="PlaySoundCheckBox" Content="Çekim sonrası deklanşör sesi çal"/>
-                <CheckBox x:Name="StartWithWindowsCheckBox" Content="Windows başladığında otomatik çalıştır"/>
-                <CheckBox x:Name="ConfirmDeleteCheckBox" Content="Son ekran görüntülerinde silerken onay sor"/>
+                <CheckBox x:Name="OpenFlyoutCheckBox" Content="Open recent screenshots panel after capture"/>
+                <CheckBox x:Name="CopyClipboardCheckBox" Content="Copy to clipboard immediately upon region selection"/>
+                <CheckBox x:Name="PlaySoundCheckBox" Content="Play shutter sound after capture"/>
+                <CheckBox x:Name="StartWithWindowsCheckBox" Content="Launch automatically on Windows startup"/>
+                <CheckBox x:Name="ConfirmDeleteCheckBox" Content="Ask confirmation before deleting in recent screenshots"/>
             </StackPanel>
         </ScrollViewer>
 
         <!-- Actions -->
         <Border Grid.Row="2" Margin="0,16,0,0" Padding="0,12,0,0" BorderBrush="#333337" BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Style="{StaticResource SecondaryBtnStyle}" Content="İptal" Margin="0,0,8,0" Click="Cancel_Click"/>
-                <Button Style="{StaticResource PrimaryBtnStyle}" Content="Kaydet ve Uygula" Click="Save_Click"/>
+                <Button Style="{StaticResource SecondaryBtnStyle}" Content="Cancel" Margin="0,0,8,0" Click="Cancel_Click"/>
+                <Button Style="{StaticResource PrimaryBtnStyle}" Content="Save &amp; Apply" Click="Save_Click"/>
             </StackPanel>
         </Border>
     </Grid>
