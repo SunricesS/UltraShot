@@ -1,11 +1,8 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Security;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
-using Windows.Data.Xml.Dom;
-using Windows.UI.Notifications;
 using UltraShot.Core;
 
 namespace UltraShot.UI;
@@ -19,6 +16,7 @@ public class TrayIconManager : IDisposable
     private readonly ToolStripMenuItem _temporaryModeMenuItem;
     private readonly ToolStripMenuItem _recentMenuItem;
     private readonly ToolStripMenuItem _exitMenuItem;
+    private NotificationToastWindow? _currentToast;
 
     public event Action? CaptureTriggered;
     public event Action? RecentScreenshotsTriggered;
@@ -94,60 +92,28 @@ public class TrayIconManager : IDisposable
     {
         try
         {
-            string? previewUri = null;
-
-            if (!string.IsNullOrEmpty(imagePath) && File.Exists(imagePath))
+            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
             {
-                previewUri = new Uri(imagePath).AbsoluteUri;
-            }
-            else if (bitmap != null)
-            {
-                string tempThumbPath = Path.Combine(Path.GetTempPath(), "UltraShot_NotificationPreview.png");
-                using (var stream = new FileStream(tempThumbPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                if (_currentToast != null)
                 {
-                    var encoder = new PngBitmapEncoder();
-                    encoder.Frames.Add(BitmapFrame.Create(bitmap));
-                    encoder.Save(stream);
+                    _currentToast.CloseImmediately();
+                    _currentToast = null;
                 }
-                previewUri = new Uri(tempThumbPath).AbsoluteUri;
-            }
 
-            if (!string.IsNullOrEmpty(previewUri))
-            {
-                string safeTitle = SecurityElement.Escape(title) ?? title;
-                string safeText = SecurityElement.Escape(text) ?? text;
-
-                string xml = $@"<toast>
-    <visual>
-        <binding template='ToastGeneric'>
-            <text>{safeTitle}</text>
-            <text>{safeText}</text>
-            <image placement='appLogoOverride' src='{previewUri}' hint-crop='none'/>
-        </binding>
-    </visual>
-</toast>";
-
-                var doc = new XmlDocument();
-                doc.LoadXml(xml);
-                var toast = new ToastNotification(doc)
+                _currentToast = new NotificationToastWindow(title, text, imagePath, bitmap);
+                _currentToast.NotificationClicked += () => NotificationClicked?.Invoke();
+                _currentToast.NotificationClosed += () =>
                 {
-                    Tag = "ScreenshotNotification"
+                    _currentToast = null;
+                    NotificationClosed?.Invoke();
                 };
-
-                toast.Activated += (s, e) => NotificationClicked?.Invoke();
-                toast.Dismissed += (s, e) => NotificationClosed?.Invoke();
-                toast.Failed += (s, e) =>
-                {
-                    _notifyIcon.ShowBalloonTip(3000, title, text, ToolTipIcon.None);
-                };
-
-                ToastNotificationManager.CreateToastNotifier("UltraShot").Show(toast);
-                return;
-            }
+                _currentToast.Show();
+            });
+            return;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Modern toast notification error: {ex.Message}");
+            Debug.WriteLine($"Modern toast window error: {ex.Message}");
         }
 
         // Fallback to NotifyIcon balloon tip with no info/exclamation badge
@@ -229,6 +195,18 @@ public class TrayIconManager : IDisposable
 
     public void Dispose()
     {
+        if (_currentToast != null)
+        {
+            try
+            {
+                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                {
+                    _currentToast.CloseImmediately();
+                    _currentToast = null;
+                });
+            }
+            catch { }
+        }
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
     }
