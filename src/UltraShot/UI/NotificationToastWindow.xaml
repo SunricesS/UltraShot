@@ -45,7 +45,9 @@
             BorderThickness="1" 
             CornerRadius="8"
             Cursor="Hand"
-            MouseLeftButtonUp="Card_MouseLeftButtonUp"
+            PreviewMouseLeftButtonDown="Card_PreviewMouseLeftButtonDown"
+            PreviewMouseMove="Card_PreviewMouseMove"
+            PreviewMouseLeftButtonUp="Card_PreviewMouseLeftButtonUp"
             MouseEnter="Card_MouseEnter"
             MouseLeave="Card_MouseLeave">
         <Border.Style>
@@ -78,6 +80,7 @@
                 <Button Style="{StaticResource ToastCloseButtonStyle}"
                         Content="✕" FontSize="11"
                         HorizontalAlignment="Right" VerticalAlignment="Center"
+                        PreviewMouseLeftButtonDown="CloseButton_PreviewMouseLeftButtonDown"
                         Click="CloseButton_Click"/>
             </Grid>
 
