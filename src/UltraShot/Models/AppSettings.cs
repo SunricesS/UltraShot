@@ -1,7 +1,15 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace UltraShot.Models;
+
+public enum AfterCaptureAction
+{
+    ShowRecent,
+    ShowNotification,
+    None
+}
 
 public class AppSettings
 {
@@ -12,7 +20,13 @@ public class AppSettings
     public string HotkeyKey { get; set; } = "S";
 
     public bool PlaySound { get; set; } = false;
-    public bool OpenFlyoutAfterCapture { get; set; } = true;
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public AfterCaptureAction AfterCaptureBehavior { get; set; } = AfterCaptureAction.ShowRecent;
+
+    // Backward compatibility for older configurations
+    public bool? OpenFlyoutAfterCapture { get; set; }
+
     public bool CopyImageToClipboard { get; set; } = true;
     public bool AutoSaveScreenshot { get; set; } = true;
     public bool SaveOnlyToClipboard

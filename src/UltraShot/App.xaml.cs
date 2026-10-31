@@ -16,6 +16,8 @@ public partial class App : Application
     private RecentFlyoutWindow? _recentFlyout;
     private SettingsWindow? _settingsWindow;
     private bool _isCapturing;
+    private string? _lastCapturedFilePath;
+    private BitmapSource? _lastCapturedBitmap;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -58,6 +60,25 @@ public partial class App : Application
         _trayManager.OpenFolderTriggered += () => StorageService.OpenFolder();
         _trayManager.SettingsTriggered += ShowSettings;
         _trayManager.ExitTriggered += ShutdownApp;
+        _trayManager.NotificationClicked += () =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (!string.IsNullOrEmpty(_lastCapturedFilePath) && System.IO.File.Exists(_lastCapturedFilePath))
+                {
+                    OpenEditor(_lastCapturedFilePath);
+                }
+                else if (_lastCapturedBitmap != null)
+                {
+                    OpenEditor(_lastCapturedBitmap);
+                }
+            });
+        };
+        _trayManager.NotificationClosed += () =>
+        {
+            _lastCapturedBitmap = null;
+            TrimMemory();
+        };
 
         _hotkeyManager = new HotkeyManager();
         _hotkeyManager.HotkeyPressed += TriggerCapture;
@@ -106,21 +127,34 @@ public partial class App : Application
                 SystemSounds.Asterisk.Play();
             }
 
+            string? savedFilePath = null;
             if (!SettingsManager.Current.SaveOnlyToClipboard && SettingsManager.Current.AutoSaveScreenshot)
             {
-                await StorageService.SaveBitmapAsync(bitmap);
-            }
-            else if (!SettingsManager.Current.OpenFlyoutAfterCapture)
-            {
-                _trayManager?.ShowNotification("UltraShot", "Screenshot copied to clipboard (Temporary mode).");
+                savedFilePath = await StorageService.SaveBitmapAsync(bitmap);
             }
 
-            if (SettingsManager.Current.OpenFlyoutAfterCapture)
+            _lastCapturedFilePath = savedFilePath;
+            _lastCapturedBitmap = bitmap;
+
+            switch (SettingsManager.Current.AfterCaptureBehavior)
             {
-                Dispatcher.Invoke(() =>
-                {
-                    ShowRecentFlyout();
-                });
+                case UltraShot.Models.AfterCaptureAction.ShowRecent:
+                    Dispatcher.Invoke(() =>
+                    {
+                        ShowRecentFlyout();
+                    });
+                    break;
+
+                case UltraShot.Models.AfterCaptureAction.ShowNotification:
+                    string notificationText = SettingsManager.Current.SaveOnlyToClipboard
+                        ? "Screenshot copied to clipboard. Click to edit."
+                        : "Screenshot saved. Click to edit.";
+                    _trayManager?.ShowNotification("UltraShot", notificationText);
+                    break;
+
+                case UltraShot.Models.AfterCaptureAction.None:
+                    // Quiet mode: do nothing
+                    break;
             }
         }
         catch (Exception ex)
@@ -154,6 +188,21 @@ public partial class App : Application
             }
 
             var editor = new EditorWindow(filePath);
+            editor.Closed += (s, e) => TrimMemory();
+            editor.Show();
+            editor.Activate();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error opening editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    public void OpenEditor(BitmapSource bitmap)
+    {
+        try
+        {
+            var editor = new EditorWindow(bitmap);
             editor.Closed += (s, e) => TrimMemory();
             editor.Show();
             editor.Activate();

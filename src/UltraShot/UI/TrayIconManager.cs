@@ -22,6 +22,8 @@ public class TrayIconManager : IDisposable
     public event Action? SettingsTriggered;
     public event Action<bool>? TemporaryModeToggled;
     public event Action? ExitTriggered;
+    public event Action? NotificationClicked;
+    public event Action? NotificationClosed;
 
     public TrayIconManager()
     {
@@ -70,6 +72,9 @@ public class TrayIconManager : IDisposable
             }
         };
 
+        _notifyIcon.BalloonTipClicked += (s, e) => NotificationClicked?.Invoke();
+        _notifyIcon.BalloonTipClosed += (s, e) => NotificationClosed?.Invoke();
+
         UpdateDisplayStrings();
     }
 
@@ -85,7 +90,7 @@ public class TrayIconManager : IDisposable
     {
         try
         {
-            _notifyIcon.ShowBalloonTip(1500, title, text, ToolTipIcon.Info);
+            _notifyIcon.ShowBalloonTip(3000, title, text, ToolTipIcon.Info);
         }
         catch { }
     }

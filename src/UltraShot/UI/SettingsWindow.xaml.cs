@@ -59,7 +59,13 @@ public partial class SettingsWindow : Window
         SaveOnlyToClipboardCheckBox.IsChecked = settings.SaveOnlyToClipboard;
         UpdateTemporaryModeHintState();
 
-        OpenFlyoutCheckBox.IsChecked = settings.OpenFlyoutAfterCapture;
+        AfterCaptureComboBox.SelectedIndex = settings.AfterCaptureBehavior switch
+        {
+            UltraShot.Models.AfterCaptureAction.ShowNotification => 1,
+            UltraShot.Models.AfterCaptureAction.None => 2,
+            _ => 0
+        };
+
         CopyClipboardCheckBox.IsChecked = settings.CopyImageToClipboard;
         PlaySoundCheckBox.IsChecked = settings.PlaySound;
         StartWithWindowsCheckBox.IsChecked = settings.StartWithWindows;
@@ -383,7 +389,12 @@ public partial class SettingsWindow : Window
         settings.HotkeyKey = _currentKey;
         settings.SaveDirectory = SaveFolderTextBox.Text;
         settings.SaveOnlyToClipboard = SaveOnlyToClipboardCheckBox.IsChecked ?? false;
-        settings.OpenFlyoutAfterCapture = OpenFlyoutCheckBox.IsChecked ?? true;
+        settings.AfterCaptureBehavior = AfterCaptureComboBox.SelectedIndex switch
+        {
+            1 => UltraShot.Models.AfterCaptureAction.ShowNotification,
+            2 => UltraShot.Models.AfterCaptureAction.None,
+            _ => UltraShot.Models.AfterCaptureAction.ShowRecent
+        };
         settings.CopyImageToClipboard = CopyClipboardCheckBox.IsChecked ?? true;
         settings.PlaySound = PlaySoundCheckBox.IsChecked ?? false;
         settings.StartWithWindows = StartWithWindowsCheckBox.IsChecked ?? false;

@@ -28,6 +28,11 @@ public static class SettingsManager
                 var loaded = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                 if (loaded != null)
                 {
+                    // Map legacy OpenFlyoutAfterCapture if present and false
+                    if (loaded.OpenFlyoutAfterCapture == false && loaded.AfterCaptureBehavior == AfterCaptureAction.ShowRecent)
+                    {
+                        loaded.AfterCaptureBehavior = AfterCaptureAction.None;
+                    }
                     Current = loaded;
                 }
             }

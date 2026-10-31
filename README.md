@@ -15,8 +15,12 @@ UltraShot is a high-performance, lightweight Windows screenshot tool engineered 
   - **PNG:** Lossless clarity (Default).
   - **JPEG:** High-efficiency compression with customizable quality level (10%–100%) to drastically reduce file sizes.
   - **BMP:** Uncompressed raw bitmap.
--  **Temporary Mode (Clipboard-Only):** Toggle to capture temporary screenshots copied only to clipboard without saving files to disk.
--  **Recent Screenshots Drawer & In-Place Confirmation:**
+- 📋 **Temporary Mode (Clipboard-Only):** Toggle to capture temporary screenshots copied only to clipboard without saving files to disk.
+- ⚙️ **Configurable Post-Capture Action:** Choose what happens immediately after taking a screenshot:
+  - **Show Recent Screenshots Drawer (Default):** Quick drawer opens at tray with actions to copy, edit, and delete.
+  - **Show Windows Notification (Click to Edit):** Displays a Windows notification in the bottom-right corner; clicking it opens the screenshot directly in the editor!
+  - **Do Nothing (Quiet Mode):** Captures and copies/saves silently with zero interruptions.
+- 🔔 **Recent Screenshots Drawer & In-Place Confirmation:**
   - Quick flyout panel displaying recent screenshots with thumbnails, creation timestamps, and dimensions.
   - Quick action buttons to Edit, Copy, and Delete.
   - Sleek, theme-consistent in-place delete confirmation with optional prompt setting.

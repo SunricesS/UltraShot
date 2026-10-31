@@ -258,14 +258,23 @@
                     </Border>
                 </Expander>
 
-                <!-- Checkboxes -->
+                <!-- After Capture Action setting -->
+                <TextBlock Text="After Capture Action" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
+                <ComboBox x:Name="AfterCaptureComboBox" Margin="0,0,0,6">
+                    <ComboBoxItem Content="Show Recent Screenshots Drawer (Default)" Tag="ShowRecent"/>
+                    <ComboBoxItem Content="Show Windows Notification (Click to edit)" Tag="ShowNotification"/>
+                    <ComboBoxItem Content="Do Nothing (Quiet mode)" Tag="None"/>
+                </ComboBox>
+                <TextBlock Text="* Choose what happens after taking a screenshot. Clicking the notification opens the editor directly." 
+                           FontSize="11" Foreground="#777777" TextWrapping="Wrap" Margin="0,0,0,16"/>
+
+                <!-- Behaviors -->
                 <TextBlock Text="Behaviors" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
                 <CheckBox x:Name="SaveOnlyToClipboardCheckBox" Content="Save only to clipboard (Temporary mode: Do not save to disk)" 
                           Checked="SaveOnlyToClipboard_Changed" Unchecked="SaveOnlyToClipboard_Changed"/>
                 <TextBlock x:Name="TemporaryModeHintText" 
                            Text="* Screenshots taken in temporary mode do not take disk space; they are copied directly to clipboard." 
                            FontSize="11" Foreground="#00D2FF" TextWrapping="Wrap" Margin="20,-2,0,8" Visibility="Collapsed"/>
-                <CheckBox x:Name="OpenFlyoutCheckBox" Content="Open recent screenshots panel after capture"/>
                 <CheckBox x:Name="CopyClipboardCheckBox" Content="Copy to clipboard immediately upon region selection"/>
                 <CheckBox x:Name="PlaySoundCheckBox" Content="Play shutter sound after capture"/>
                 <CheckBox x:Name="StartWithWindowsCheckBox" Content="Launch automatically on Windows startup"/>
