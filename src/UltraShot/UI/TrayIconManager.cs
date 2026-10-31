@@ -1,7 +1,11 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Security;
 using System.Windows.Forms;
+using System.Windows.Media.Imaging;
+using Windows.Data.Xml.Dom;
+using Windows.UI.Notifications;
 using UltraShot.Core;
 
 namespace UltraShot.UI;
@@ -86,11 +90,70 @@ public class TrayIconManager : IDisposable
         _temporaryModeMenuItem.Checked = SettingsManager.Current.SaveOnlyToClipboard;
     }
 
-    public void ShowNotification(string title, string text)
+    public void ShowNotification(string title, string text, string? imagePath = null, BitmapSource? bitmap = null)
     {
         try
         {
-            _notifyIcon.ShowBalloonTip(3000, title, text, ToolTipIcon.Info);
+            string? previewUri = null;
+
+            if (!string.IsNullOrEmpty(imagePath) && File.Exists(imagePath))
+            {
+                previewUri = new Uri(imagePath).AbsoluteUri;
+            }
+            else if (bitmap != null)
+            {
+                string tempThumbPath = Path.Combine(Path.GetTempPath(), "UltraShot_NotificationPreview.png");
+                using (var stream = new FileStream(tempThumbPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                {
+                    var encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                    encoder.Save(stream);
+                }
+                previewUri = new Uri(tempThumbPath).AbsoluteUri;
+            }
+
+            if (!string.IsNullOrEmpty(previewUri))
+            {
+                string safeTitle = SecurityElement.Escape(title) ?? title;
+                string safeText = SecurityElement.Escape(text) ?? text;
+
+                string xml = $@"<toast>
+    <visual>
+        <binding template='ToastGeneric'>
+            <text>{safeTitle}</text>
+            <text>{safeText}</text>
+            <image placement='appLogoOverride' src='{previewUri}' hint-crop='none'/>
+        </binding>
+    </visual>
+</toast>";
+
+                var doc = new XmlDocument();
+                doc.LoadXml(xml);
+                var toast = new ToastNotification(doc)
+                {
+                    Tag = "ScreenshotNotification"
+                };
+
+                toast.Activated += (s, e) => NotificationClicked?.Invoke();
+                toast.Dismissed += (s, e) => NotificationClosed?.Invoke();
+                toast.Failed += (s, e) =>
+                {
+                    _notifyIcon.ShowBalloonTip(3000, title, text, ToolTipIcon.None);
+                };
+
+                ToastNotificationManager.CreateToastNotifier("UltraShot").Show(toast);
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Modern toast notification error: {ex.Message}");
+        }
+
+        // Fallback to NotifyIcon balloon tip with no info/exclamation badge
+        try
+        {
+            _notifyIcon.ShowBalloonTip(3000, title, text, ToolTipIcon.None);
         }
         catch { }
     }

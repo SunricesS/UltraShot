@@ -149,7 +149,7 @@ public partial class App : Application
                     string notificationText = SettingsManager.Current.SaveOnlyToClipboard
                         ? "Screenshot copied to clipboard. Click to edit."
                         : "Screenshot saved. Click to edit.";
-                    _trayManager?.ShowNotification("UltraShot", notificationText);
+                    _trayManager?.ShowNotification("UltraShot", notificationText, savedFilePath, bitmap);
                     break;
 
                 case UltraShot.Models.AfterCaptureAction.None:
