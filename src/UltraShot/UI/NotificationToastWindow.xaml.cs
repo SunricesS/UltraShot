@@ -87,9 +87,9 @@ public partial class NotificationToastWindow : Window
 
     private void StartEntranceAnimation()
     {
-        Opacity = 0;
+        CardBorder.Opacity = 0;
         var translate = new TranslateTransform(0, 18);
-        RenderTransform = translate;
+        CardBorder.RenderTransform = translate;
 
         var fadeAnim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(220))
         {
@@ -100,7 +100,7 @@ public partial class NotificationToastWindow : Window
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
 
-        BeginAnimation(OpacityProperty, fadeAnim);
+        CardBorder.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
         translate.BeginAnimation(TranslateTransform.YProperty, slideAnim);
     }
 
@@ -118,7 +118,7 @@ public partial class NotificationToastWindow : Window
         _isClosing = true;
         _autoCloseTimer.Stop();
 
-        var fadeAnim = new DoubleAnimation(Opacity, 0, TimeSpan.FromMilliseconds(160))
+        var fadeAnim = new DoubleAnimation(CardBorder.Opacity, 0, TimeSpan.FromMilliseconds(160))
         {
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
         };
@@ -132,7 +132,7 @@ public partial class NotificationToastWindow : Window
             Close();
         };
 
-        BeginAnimation(OpacityProperty, fadeAnim);
+        CardBorder.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
     }
 
     private void Card_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -149,12 +149,10 @@ public partial class NotificationToastWindow : Window
     private void Card_MouseEnter(object sender, MouseEventArgs e)
     {
         _autoCloseTimer.Stop();
-        CardBorder.Background = new SolidColorBrush(Color.FromRgb(0x28, 0x28, 0x28));
     }
 
     private void Card_MouseLeave(object sender, MouseEventArgs e)
     {
-        CardBorder.Background = new SolidColorBrush(Color.FromRgb(0x1F, 0x1F, 0x1F));
         if (!_isClosing)
         {
             _autoCloseTimer.Interval = TimeSpan.FromSeconds(2.5);

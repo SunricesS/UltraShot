@@ -41,7 +41,6 @@
 
     <Border x:Name="CardBorder" 
             Margin="6"
-            Background="#1F1F1F" 
             BorderBrush="#383838" 
             BorderThickness="1" 
             CornerRadius="8"
@@ -49,6 +48,16 @@
             MouseLeftButtonUp="Card_MouseLeftButtonUp"
             MouseEnter="Card_MouseEnter"
             MouseLeave="Card_MouseLeave">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="#1F1F1F"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#282828"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Border.Effect>
             <DropShadowEffect BlurRadius="12" Direction="270" ShadowDepth="3" Opacity="0.45" Color="Black"/>
         </Border.Effect>
