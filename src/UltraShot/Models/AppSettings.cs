@@ -18,6 +18,7 @@ public class AppSettings
 
     public string HotkeyModifiers { get; set; } = "Control, Shift";
     public string HotkeyKey { get; set; } = "S";
+    public bool FlexibleHotkeyOrder { get; set; } = true;
 
     public bool PlaySound { get; set; } = false;
 

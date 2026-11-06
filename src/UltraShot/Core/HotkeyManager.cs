@@ -12,6 +12,9 @@ namespace UltraShot.Core;
 public class HotkeyManager : IDisposable
 {
     private const int HOTKEY_ID = 9001;
+    // Maximum time window (ms) allowed from the first key press to the last key press in flexible combo mode (< 1 second)
+    private const long FLEXIBLE_COMBO_WINDOW_MS = 650;
+
     private HwndSource? _source;
     private bool _isRegistered;
 
@@ -24,12 +27,30 @@ public class HotkeyManager : IDisposable
     private bool _targetCtrl;
     private bool _targetShift;
     private bool _targetAlt;
+    private bool _flexibleOrder = true;
 
-    // Track physical Win key press with automatic expiration to prevent stuck state after Lock Screen / Admin windows
+    // Physical down tracking with automatic 4s expiration to prevent stuck state after Lock Screen / Admin windows
     private bool _isWinDown;
+    private bool _isCtrlDown;
+    private bool _isShiftDown;
+    private bool _isAltDown;
+    private bool _isTargetDown;
+
     private long _winDownTimestamp;
+    private long _ctrlDownTimestamp;
+    private long _shiftDownTimestamp;
+    private long _altDownTimestamp;
+    private long _targetDownTimestamp;
+
+    // Initial key-down timestamps (non-repeating) for rapid order-independent combo matching
+    private long _lastWinPressTick;
+    private long _lastCtrlPressTick;
+    private long _lastShiftPressTick;
+    private long _lastAltPressTick;
+    private long _lastTargetPressTick;
 
     private bool _suppressNextKeyUp;
+    private uint _suppressedVk;
     private readonly DispatcherTimer _keepAliveTimer;
 
     public event Action? HotkeyPressed;
@@ -85,11 +106,30 @@ public class HotkeyManager : IDisposable
         _ = NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT);
     }
 
+    private void ResetState()
+    {
+        _isWinDown = false;
+        _isCtrlDown = false;
+        _isShiftDown = false;
+        _isAltDown = false;
+        _isTargetDown = false;
+        _suppressNextKeyUp = false;
+        ResetComboTimestamps();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ResetComboTimestamps()
+    {
+        _lastWinPressTick = 0;
+        _lastCtrlPressTick = 0;
+        _lastShiftPressTick = 0;
+        _lastAltPressTick = 0;
+        _lastTargetPressTick = 0;
+    }
+
     private void OnSessionSwitch(object sender, SessionSwitchEventArgs e)
     {
-        // Reset any modifier state on lock/unlock and refresh hook on unlock
-        _isWinDown = false;
-        _suppressNextKeyUp = false;
+        ResetState();
 
         if (e.Reason == SessionSwitchReason.SessionUnlock && _hookId != IntPtr.Zero)
         {
@@ -101,8 +141,7 @@ public class HotkeyManager : IDisposable
     {
         if (e.Mode == PowerModes.Resume)
         {
-            _isWinDown = false;
-            _suppressNextKeyUp = false;
+            ResetState();
 
             if (_hookId != IntPtr.Zero)
             {
@@ -113,13 +152,14 @@ public class HotkeyManager : IDisposable
 
     public bool RegisterFromSettings(AppSettings settings)
     {
-        return Register(settings.HotkeyModifiers, settings.HotkeyKey);
+        return Register(settings.HotkeyModifiers, settings.HotkeyKey, settings.FlexibleHotkeyOrder);
     }
 
-    public bool Register(string modifierStr, string keyStr)
+    public bool Register(string modifierStr, string keyStr, bool flexibleOrder = true)
     {
         Unregister();
 
+        _flexibleOrder = flexibleOrder;
         _targetWin = false;
         _targetCtrl = false;
         _targetShift = false;
@@ -158,15 +198,15 @@ public class HotkeyManager : IDisposable
         _targetVk = ParseVirtualKey(keyStr);
         if (_targetVk == 0) return false;
 
-        // If Win key is part of the shortcut, use WH_KEYBOARD_LL directly because
-        // Windows shell reserves most Win key combinations (e.g. Win+Shift+S, Win+S, Win+A)
-        // and RegisterHotKey fails with ERROR_HOTKEY_ALREADY_REGISTERED (1409).
-        if (_targetWin)
+        bool hasModifiers = _targetWin || _targetCtrl || _targetShift || _targetAlt;
+
+        // Use WH_KEYBOARD_LL directly when Win key is involved or when flexible order is enabled with modifiers
+        if (_targetWin || (_flexibleOrder && hasModifiers))
         {
             return InstallHook();
         }
 
-        // For standard combinations, try standard Win32 RegisterHotKey first
+        // For standard strict combinations, try standard Win32 RegisterHotKey first
         if (_source != null && _source.Handle != IntPtr.Zero)
         {
             _isRegistered = NativeMethods.RegisterHotKey(_source.Handle, HOTKEY_ID, modifiers, _targetVk);
@@ -193,8 +233,7 @@ public class HotkeyManager : IDisposable
             _hookProcHandle.Free();
         }
 
-        _isWinDown = false;
-        _suppressNextKeyUp = false;
+        ResetState();
 
         // Pin delegate with GCHandle so GC can never relocate or collect it
         _hookProc = HookCallback;
@@ -223,8 +262,7 @@ public class HotkeyManager : IDisposable
             _hookProcHandle.Free();
         }
 
-        _isWinDown = false;
-        _suppressNextKeyUp = false;
+        ResetState();
     }
 
     private static uint ParseVirtualKey(string keyStr)
@@ -256,61 +294,186 @@ public class HotkeyManager : IDisposable
             // Read vkCode directly from first 4 bytes of KBDLLHOOKSTRUCT without full struct marshaling
             uint vk = (uint)Marshal.ReadInt32(lParam);
 
+            // Ignore synthetic mask key (0xE8) injected by SendMenuMaskAndReleaseWin
+            if (vk == NativeMethods.VK_MASK_KEY)
+            {
+                return NativeMethods.CallNextHookEx(_hookId, nCode, wParam, lParam);
+            }
+
+            bool isWinKey = vk is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN;
+            bool isCtrlKey = vk is NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL;
+            bool isShiftKey = vk is NativeMethods.VK_SHIFT or NativeMethods.VK_LSHIFT or NativeMethods.VK_RSHIFT;
+            bool isAltKey = vk is NativeMethods.VK_MENU or NativeMethods.VK_LMENU or NativeMethods.VK_RMENU;
+            bool isTargetKey = vk == _targetVk;
+
             if (msg == NativeMethods.WM_KEYDOWN || msg == NativeMethods.WM_SYSKEYDOWN)
             {
-                if (vk is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
+                long now = Environment.TickCount64;
+
+                bool isPartOfTargetCombo =
+                    (isWinKey && _targetWin) ||
+                    (isCtrlKey && _targetCtrl) ||
+                    (isShiftKey && _targetShift) ||
+                    (isAltKey && _targetAlt) ||
+                    isTargetKey;
+
+                if (!isPartOfTargetCombo)
                 {
-                    _isWinDown = true;
-                    _winDownTimestamp = Environment.TickCount64;
+                    // Any unrelated key press immediately invalidates the rapid combo sequence
+                    ResetComboTimestamps();
                 }
-
-                if (vk == _targetVk)
+                else
                 {
-                    bool winDown = IsKeyDown(NativeMethods.VK_LWIN) ||
-                                   IsKeyDown(NativeMethods.VK_RWIN) ||
-                                   (_isWinDown && (Environment.TickCount64 - _winDownTimestamp) < 4000);
-
-                    bool ctrlDown = IsKeyDown(NativeMethods.VK_CONTROL) ||
-                                    IsKeyDown(NativeMethods.VK_LCONTROL) ||
-                                    IsKeyDown(NativeMethods.VK_RCONTROL);
-
-                    bool shiftDown = IsKeyDown(NativeMethods.VK_SHIFT) ||
-                                     IsKeyDown(NativeMethods.VK_LSHIFT) ||
-                                     IsKeyDown(NativeMethods.VK_RSHIFT);
-
-                    bool altDown = IsKeyDown(NativeMethods.VK_MENU) ||
-                                   IsKeyDown(NativeMethods.VK_LMENU) ||
-                                   IsKeyDown(NativeMethods.VK_RMENU);
-
-                    if (winDown == _targetWin &&
-                        ctrlDown == _targetCtrl &&
-                        shiftDown == _targetShift &&
-                        altDown == _targetAlt)
+                    // Record initial press timestamp (ignore auto-repeat while key is held down)
+                    if (isWinKey)
                     {
-                        _suppressNextKeyUp = true;
-                        bool releaseWin = _targetWin;
-
-                        Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Send, () =>
+                        if (!_isWinDown || (now - _winDownTimestamp) > 4000)
                         {
-                            if (releaseWin)
-                            {
-                                NativeMethods.SendMenuMaskAndReleaseWin();
-                            }
-                            HotkeyPressed?.Invoke();
-                        });
+                            _lastWinPressTick = now;
+                        }
+                        _isWinDown = true;
+                        _winDownTimestamp = now;
+                    }
+                    else if (isCtrlKey)
+                    {
+                        if (!_isCtrlDown || (now - _ctrlDownTimestamp) > 4000)
+                        {
+                            _lastCtrlPressTick = now;
+                        }
+                        _isCtrlDown = true;
+                        _ctrlDownTimestamp = now;
+                    }
+                    else if (isShiftKey)
+                    {
+                        if (!_isShiftDown || (now - _shiftDownTimestamp) > 4000)
+                        {
+                            _lastShiftPressTick = now;
+                        }
+                        _isShiftDown = true;
+                        _shiftDownTimestamp = now;
+                    }
+                    else if (isAltKey)
+                    {
+                        if (!_isAltDown || (now - _altDownTimestamp) > 4000)
+                        {
+                            _lastAltPressTick = now;
+                        }
+                        _isAltDown = true;
+                        _altDownTimestamp = now;
+                    }
+                    else if (isTargetKey)
+                    {
+                        if (!_isTargetDown || (now - _targetDownTimestamp) > 4000)
+                        {
+                            _lastTargetPressTick = now;
+                        }
+                        _isTargetDown = true;
+                        _targetDownTimestamp = now;
+                    }
 
-                        return (IntPtr)1; // Consume key immediately so Windows hook never times out
+                    // Ensure no non-configured modifier is currently held down
+                    bool unwantedWin = !_targetWin && (IsKeyDown(NativeMethods.VK_LWIN) || IsKeyDown(NativeMethods.VK_RWIN));
+                    bool unwantedCtrl = !_targetCtrl && (IsKeyDown(NativeMethods.VK_CONTROL) || IsKeyDown(NativeMethods.VK_LCONTROL) || IsKeyDown(NativeMethods.VK_RCONTROL));
+                    bool unwantedShift = !_targetShift && (IsKeyDown(NativeMethods.VK_SHIFT) || IsKeyDown(NativeMethods.VK_LSHIFT) || IsKeyDown(NativeMethods.VK_RSHIFT));
+                    bool unwantedAlt = !_targetAlt && (IsKeyDown(NativeMethods.VK_MENU) || IsKeyDown(NativeMethods.VK_LMENU) || IsKeyDown(NativeMethods.VK_RMENU));
+
+                    if (!(unwantedWin || unwantedCtrl || unwantedShift || unwantedAlt))
+                    {
+                        bool shouldTrigger = false;
+
+                        if (_flexibleOrder)
+                        {
+                            // Flexible order mode: all required keys in the combo can be pressed in ANY order
+                            // (e.g. Win+Shift+S, Shift+Win+S, S+Win+Shift) as long as all of them were pressed
+                            // rapidly within FLEXIBLE_COMBO_WINDOW_MS (650ms < 1s).
+                            bool winRapid = !_targetWin || (_lastWinPressTick > 0 && (now - _lastWinPressTick) <= FLEXIBLE_COMBO_WINDOW_MS);
+                            bool ctrlRapid = !_targetCtrl || (_lastCtrlPressTick > 0 && (now - _lastCtrlPressTick) <= FLEXIBLE_COMBO_WINDOW_MS);
+                            bool shiftRapid = !_targetShift || (_lastShiftPressTick > 0 && (now - _lastShiftPressTick) <= FLEXIBLE_COMBO_WINDOW_MS);
+                            bool altRapid = !_targetAlt || (_lastAltPressTick > 0 && (now - _lastAltPressTick) <= FLEXIBLE_COMBO_WINDOW_MS);
+                            bool targetRapid = _lastTargetPressTick > 0 && (now - _lastTargetPressTick) <= FLEXIBLE_COMBO_WINDOW_MS;
+
+                            if (winRapid && ctrlRapid && shiftRapid && altRapid && targetRapid)
+                            {
+                                shouldTrigger = true;
+                            }
+                        }
+                        else if (isTargetKey)
+                        {
+                            // Classic strict mode: modifiers must be held down first, and target key pressed last
+                            bool winDown = IsKeyDown(NativeMethods.VK_LWIN) ||
+                                           IsKeyDown(NativeMethods.VK_RWIN) ||
+                                           (_isWinDown && (now - _winDownTimestamp) < 4000);
+
+                            bool ctrlDown = IsKeyDown(NativeMethods.VK_CONTROL) ||
+                                            IsKeyDown(NativeMethods.VK_LCONTROL) ||
+                                            IsKeyDown(NativeMethods.VK_RCONTROL) ||
+                                            (_isCtrlDown && (now - _ctrlDownTimestamp) < 4000);
+
+                            bool shiftDown = IsKeyDown(NativeMethods.VK_SHIFT) ||
+                                             IsKeyDown(NativeMethods.VK_LSHIFT) ||
+                                             IsKeyDown(NativeMethods.VK_RSHIFT) ||
+                                             (_isShiftDown && (now - _shiftDownTimestamp) < 4000);
+
+                            bool altDown = IsKeyDown(NativeMethods.VK_MENU) ||
+                                           IsKeyDown(NativeMethods.VK_LMENU) ||
+                                           IsKeyDown(NativeMethods.VK_RMENU) ||
+                                           (_isAltDown && (now - _altDownTimestamp) < 4000);
+
+                            if (winDown == _targetWin &&
+                                ctrlDown == _targetCtrl &&
+                                shiftDown == _targetShift &&
+                                altDown == _targetAlt)
+                            {
+                                shouldTrigger = true;
+                            }
+                        }
+
+                        if (shouldTrigger)
+                        {
+                            ResetComboTimestamps();
+                            _suppressNextKeyUp = true;
+                            _suppressedVk = vk;
+                            bool releaseWin = _targetWin;
+
+                            Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Send, () =>
+                            {
+                                if (releaseWin)
+                                {
+                                    NativeMethods.SendMenuMaskAndReleaseWin();
+                                }
+                                HotkeyPressed?.Invoke();
+                            });
+
+                            return (IntPtr)1; // Consume key immediately so Windows hook never times out
+                        }
                     }
                 }
             }
             else if (msg == NativeMethods.WM_KEYUP || msg == NativeMethods.WM_SYSKEYUP)
             {
-                if (vk is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
+                if (isWinKey)
                 {
                     _isWinDown = false;
                 }
+                else if (isCtrlKey)
+                {
+                    _isCtrlDown = false;
+                }
+                else if (isShiftKey)
+                {
+                    _isShiftDown = false;
+                }
+                else if (isAltKey)
+                {
+                    _isAltDown = false;
+                }
+                else if (isTargetKey)
+                {
+                    _isTargetDown = false;
+                }
 
-                if (vk == _targetVk && _suppressNextKeyUp)
+                // Never swallow WM_KEYUP for Win key so the OS raw input state never thinks Win is stuck down
+                if (!isWinKey && _suppressNextKeyUp && vk == _suppressedVk)
                 {
                     _suppressNextKeyUp = false;
                     return (IntPtr)1;

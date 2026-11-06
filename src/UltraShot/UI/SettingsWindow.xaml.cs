@@ -70,6 +70,7 @@ public partial class SettingsWindow : Window
         PlaySoundCheckBox.IsChecked = settings.PlaySound;
         StartWithWindowsCheckBox.IsChecked = settings.StartWithWindows;
         ConfirmDeleteCheckBox.IsChecked = settings.ConfirmBeforeDelete;
+        FlexibleHotkeyCheckBox.IsChecked = settings.FlexibleHotkeyOrder;
     }
 
     private void SaveOnlyToClipboard_Changed(object sender, RoutedEventArgs e)
@@ -387,6 +388,7 @@ public partial class SettingsWindow : Window
 
         settings.HotkeyModifiers = _currentModifiers;
         settings.HotkeyKey = _currentKey;
+        settings.FlexibleHotkeyOrder = FlexibleHotkeyCheckBox.IsChecked ?? true;
         settings.SaveDirectory = SaveFolderTextBox.Text;
         settings.SaveOnlyToClipboard = SaveOnlyToClipboardCheckBox.IsChecked ?? false;
         settings.AfterCaptureBehavior = AfterCaptureComboBox.SelectedIndex switch

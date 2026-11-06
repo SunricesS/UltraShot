@@ -213,7 +213,11 @@
                 </Grid>
 
                 <TextBlock Text="* Click the box and press keys on your keyboard to change hotkey (e.g. Ctrl+Shift+S or PrintScreen)." 
-                           FontSize="11" Foreground="#777777" TextWrapping="Wrap" Margin="0,-10,0,16"/>
+                           FontSize="11" Foreground="#777777" TextWrapping="Wrap" Margin="0,-10,0,8"/>
+
+                <CheckBox x:Name="FlexibleHotkeyCheckBox" 
+                          Content="Allow flexible key order when pressed rapidly (e.g. Shift + Win + S)" 
+                          Margin="0,0,0,16"/>
 
                 <!-- Save Folder setting -->
                 <TextBlock Text="Screenshots Folder" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,6"/>
