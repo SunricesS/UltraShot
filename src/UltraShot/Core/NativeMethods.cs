@@ -36,6 +36,18 @@ public static partial class NativeMethods
     public const byte VK_MASK_KEY = 0xE8;
     public const uint KEYEVENTF_KEYUP = 0x0002;
 
+    public const int ProcessPowerThrottling = 4;
+    public const uint PROCESS_POWER_THROTTLING_CURRENT_VERSION = 1;
+    public const uint PROCESS_POWER_THROTTLING_EXECUTION_SPEED = 0x1;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PROCESS_POWER_THROTTLING_STATE
+    {
+        public uint Version;
+        public uint ControlMask;
+        public uint StateMask;
+    }
+
     public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     [StructLayout(LayoutKind.Sequential)]
@@ -128,6 +140,41 @@ public static partial class NativeMethods
 
     [LibraryImport("user32.dll")]
     public static partial void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetProcessInformation(
+        IntPtr hProcess,
+        int ProcessInformationClass,
+        ref PROCESS_POWER_THROTTLING_STATE ProcessInformation,
+        uint ProcessInformationSize);
+
+    /// <summary>
+    /// Prevents Windows 10/11 EcoQoS (Efficiency Mode) from throttling the background process
+    /// and ensures immediate responsiveness when a global hotkey is pressed.
+    /// </summary>
+    public static void DisableBackgroundThrottling()
+    {
+        try
+        {
+            using var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+            currentProcess.PriorityClass = System.Diagnostics.ProcessPriorityClass.AboveNormal;
+
+            var throttlingState = new PROCESS_POWER_THROTTLING_STATE
+            {
+                Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION,
+                ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED,
+                StateMask = 0 // 0 disables throttling
+            };
+
+            SetProcessInformation(
+                currentProcess.Handle,
+                ProcessPowerThrottling,
+                ref throttlingState,
+                (uint)Marshal.SizeOf<PROCESS_POWER_THROTTLING_STATE>());
+        }
+        catch { }
+    }
 
     /// <summary>
     /// Sends a mask key (0xE8) so Windows knows a combination was used (preventing the Start menu),

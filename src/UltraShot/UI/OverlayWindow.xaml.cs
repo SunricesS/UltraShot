@@ -33,6 +33,11 @@ public partial class OverlayWindow : Window
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+        if (hwnd != IntPtr.Zero)
+        {
+            NativeMethods.SetForegroundWindow(hwnd);
+        }
         Activate();
         Focus();
         UpdateMask(Rect.Empty);

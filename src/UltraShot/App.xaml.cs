@@ -50,6 +50,9 @@ public partial class App : Application
             }
         };
 
+        // Prevent Windows EcoQoS background throttling so hotkeys respond instantly
+        NativeMethods.DisableBackgroundThrottling();
+
         // Load configuration
         SettingsManager.Load();
 
@@ -84,7 +87,32 @@ public partial class App : Application
         _hotkeyManager.HotkeyPressed += TriggerCapture;
         _hotkeyManager.RegisterFromSettings(SettingsManager.Current);
 
-        TrimMemory();
+        WarmupCapturePipeline();
+    }
+
+    private void WarmupCapturePipeline()
+    {
+        try
+        {
+            // Pre-JIT critical capture and overlay methods so the very first hotkey press has zero cold-start delay
+            var triggerMethod = typeof(App).GetMethod(nameof(TriggerCapture));
+            if (triggerMethod != null)
+            {
+                System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(triggerMethod.MethodHandle);
+            }
+
+            var captureMethod = typeof(ScreenCaptureService).GetMethod(nameof(ScreenCaptureService.CaptureVirtualScreen));
+            if (captureMethod != null)
+            {
+                System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(captureMethod.MethodHandle);
+            }
+
+            foreach (var ctor in typeof(OverlayWindow).GetConstructors())
+            {
+                System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(ctor.MethodHandle);
+            }
+        }
+        catch { }
     }
 
     public void TriggerCapture()
@@ -271,9 +299,11 @@ public partial class App : Application
     {
         try
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            NativeMethods.SetProcessWorkingSetSize(Process.GetCurrentProcess().Handle, (IntPtr)(-1), (IntPtr)(-1));
+            // Reclaim temporary bitmap buffers on the Large Object Heap without calling
+            // SetProcessWorkingSetSize(-1, -1), which would swap out the process code/hook
+            // pages to disk and cause hotkey lag or hook timeouts when waking from idle.
+            System.Runtime.GCSettings.LargeObjectHeapCompactionMode = System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
+            GC.Collect(2, GCCollectionMode.Forced, blocking: false, compacting: true);
         }
         catch { }
     }

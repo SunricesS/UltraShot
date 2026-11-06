@@ -1,6 +1,10 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
+using Microsoft.Win32;
 using UltraShot.Models;
 
 namespace UltraShot.Core;
@@ -13,6 +17,7 @@ public class HotkeyManager : IDisposable
 
     private IntPtr _hookId = IntPtr.Zero;
     private NativeMethods.LowLevelKeyboardProc? _hookProc;
+    private GCHandle _hookProcHandle;
 
     private uint _targetVk;
     private bool _targetWin;
@@ -20,13 +25,12 @@ public class HotkeyManager : IDisposable
     private bool _targetShift;
     private bool _targetAlt;
 
-    // Explicit modifier tracking in the global hook
+    // Track physical Win key press with automatic expiration to prevent stuck state after Lock Screen / Admin windows
     private bool _isWinDown;
-    private bool _isCtrlDown;
-    private bool _isShiftDown;
-    private bool _isAltDown;
+    private long _winDownTimestamp;
 
     private bool _suppressNextKeyUp;
+    private readonly DispatcherTimer _keepAliveTimer;
 
     public event Action? HotkeyPressed;
 
@@ -45,6 +49,66 @@ public class HotkeyManager : IDisposable
 
         _source = new HwndSource(parameters);
         _source.AddHook(HwndHook);
+
+        // Pre-JIT the hook callback so it never stalls on first key press
+        try
+        {
+            var method = typeof(HotkeyManager).GetMethod(
+                nameof(HookCallback),
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            if (method != null)
+            {
+                RuntimeHelpers.PrepareMethod(method.MethodHandle);
+            }
+        }
+        catch { }
+
+        // Listen for session lock/unlock and sleep/resume to ensure hooks stay alive
+        SystemEvents.SessionSwitch += OnSessionSwitch;
+        SystemEvents.PowerModeChanged += OnPowerModeChanged;
+
+        // Lightweight keep-alive timer (every 45s) to prevent Windows from paging out
+        // the hotkey hook and UI dispatcher pages when idle for long periods
+        _keepAliveTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromSeconds(45)
+        };
+        _keepAliveTimer.Tick += OnKeepAliveTick;
+        _keepAliveTimer.Start();
+    }
+
+    private void OnKeepAliveTick(object? sender, EventArgs e)
+    {
+        // Touch critical state so OS keeps hook pages in physical working set
+        _ = _targetVk;
+        _ = _hookId;
+        _ = NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT);
+    }
+
+    private void OnSessionSwitch(object sender, SessionSwitchEventArgs e)
+    {
+        // Reset any modifier state on lock/unlock and refresh hook on unlock
+        _isWinDown = false;
+        _suppressNextKeyUp = false;
+
+        if (e.Reason == SessionSwitchReason.SessionUnlock && _hookId != IntPtr.Zero)
+        {
+            InstallHook();
+        }
+    }
+
+    private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+    {
+        if (e.Mode == PowerModes.Resume)
+        {
+            _isWinDown = false;
+            _suppressNextKeyUp = false;
+
+            if (_hookId != IntPtr.Zero)
+            {
+                InstallHook();
+            }
+        }
     }
 
     public bool RegisterFromSettings(AppSettings settings)
@@ -124,14 +188,17 @@ public class HotkeyManager : IDisposable
             _hookId = IntPtr.Zero;
         }
 
+        if (_hookProcHandle.IsAllocated)
+        {
+            _hookProcHandle.Free();
+        }
+
         _isWinDown = false;
-        _isCtrlDown = false;
-        _isShiftDown = false;
-        _isAltDown = false;
         _suppressNextKeyUp = false;
 
-        // Prevent delegate from being garbage collected
+        // Pin delegate with GCHandle so GC can never relocate or collect it
         _hookProc = HookCallback;
+        _hookProcHandle = GCHandle.Alloc(_hookProc);
         _hookId = NativeMethods.SetWindowsHookExW(NativeMethods.WH_KEYBOARD_LL, _hookProc, IntPtr.Zero, 0);
         return _hookId != IntPtr.Zero;
     }
@@ -151,14 +218,16 @@ public class HotkeyManager : IDisposable
             _hookProc = null;
         }
 
+        if (_hookProcHandle.IsAllocated)
+        {
+            _hookProcHandle.Free();
+        }
+
         _isWinDown = false;
-        _isCtrlDown = false;
-        _isShiftDown = false;
-        _isAltDown = false;
         _suppressNextKeyUp = false;
     }
 
-    private uint ParseVirtualKey(string keyStr)
+    private static uint ParseVirtualKey(string keyStr)
     {
         if (keyStr.Equals("PrintScreen", StringComparison.OrdinalIgnoreCase) ||
             keyStr.Equals("PrtScn", StringComparison.OrdinalIgnoreCase) ||
@@ -176,44 +245,42 @@ public class HotkeyManager : IDisposable
         return 0;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsKeyDown(int vk) => (NativeMethods.GetAsyncKeyState(vk) & 0x8000) != 0;
+
     private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
         if (nCode >= 0)
         {
             int msg = wParam.ToInt32();
+            // Read vkCode directly from first 4 bytes of KBDLLHOOKSTRUCT without full struct marshaling
+            uint vk = (uint)Marshal.ReadInt32(lParam);
+
             if (msg == NativeMethods.WM_KEYDOWN || msg == NativeMethods.WM_SYSKEYDOWN)
             {
-                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
-                uint vk = hookStruct.vkCode;
-
                 if (vk is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
                 {
                     _isWinDown = true;
-                }
-                else if (vk is NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL)
-                {
-                    _isCtrlDown = true;
-                }
-                else if (vk is NativeMethods.VK_SHIFT or NativeMethods.VK_LSHIFT or NativeMethods.VK_RSHIFT)
-                {
-                    _isShiftDown = true;
-                }
-                else if (vk is NativeMethods.VK_MENU or NativeMethods.VK_LMENU or NativeMethods.VK_RMENU)
-                {
-                    _isAltDown = true;
+                    _winDownTimestamp = Environment.TickCount64;
                 }
 
                 if (vk == _targetVk)
                 {
-                    bool winDown = _isWinDown ||
-                                   (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 ||
-                                   (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) & 0x8000) != 0;
-                    bool ctrlDown = _isCtrlDown ||
-                                    (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0;
-                    bool shiftDown = _isShiftDown ||
-                                     (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0;
-                    bool altDown = _isAltDown ||
-                                   (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0;
+                    bool winDown = IsKeyDown(NativeMethods.VK_LWIN) ||
+                                   IsKeyDown(NativeMethods.VK_RWIN) ||
+                                   (_isWinDown && (Environment.TickCount64 - _winDownTimestamp) < 4000);
+
+                    bool ctrlDown = IsKeyDown(NativeMethods.VK_CONTROL) ||
+                                    IsKeyDown(NativeMethods.VK_LCONTROL) ||
+                                    IsKeyDown(NativeMethods.VK_RCONTROL);
+
+                    bool shiftDown = IsKeyDown(NativeMethods.VK_SHIFT) ||
+                                     IsKeyDown(NativeMethods.VK_LSHIFT) ||
+                                     IsKeyDown(NativeMethods.VK_RSHIFT);
+
+                    bool altDown = IsKeyDown(NativeMethods.VK_MENU) ||
+                                   IsKeyDown(NativeMethods.VK_LMENU) ||
+                                   IsKeyDown(NativeMethods.VK_RMENU);
 
                     if (winDown == _targetWin &&
                         ctrlDown == _targetCtrl &&
@@ -221,42 +288,26 @@ public class HotkeyManager : IDisposable
                         altDown == _targetAlt)
                     {
                         _suppressNextKeyUp = true;
-                        if (_targetWin)
-                        {
-                            NativeMethods.SendMenuMaskAndReleaseWin();
-                        }
+                        bool releaseWin = _targetWin;
 
-                        Application.Current?.Dispatcher.BeginInvoke(() =>
+                        Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Send, () =>
                         {
+                            if (releaseWin)
+                            {
+                                NativeMethods.SendMenuMaskAndReleaseWin();
+                            }
                             HotkeyPressed?.Invoke();
                         });
-                        return (IntPtr)1; // Consume key, suppress Windows default tools (e.g. Snipping Tool / Search)
+
+                        return (IntPtr)1; // Consume key immediately so Windows hook never times out
                     }
                 }
             }
             else if (msg == NativeMethods.WM_KEYUP || msg == NativeMethods.WM_SYSKEYUP)
             {
-                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
-                uint vk = hookStruct.vkCode;
-
                 if (vk is NativeMethods.VK_LWIN or NativeMethods.VK_RWIN)
                 {
                     _isWinDown = false;
-                    // Do NOT swallow WM_KEYUP!
-                    // SendMenuMaskAndReleaseWin() already masked the Start menu and released the key state.
-                    // Allowing WM_KEYUP to pass ensures Windows raw input subsystem knows the Win key is UP.
-                }
-                else if (vk is NativeMethods.VK_CONTROL or NativeMethods.VK_LCONTROL or NativeMethods.VK_RCONTROL)
-                {
-                    _isCtrlDown = false;
-                }
-                else if (vk is NativeMethods.VK_SHIFT or NativeMethods.VK_LSHIFT or NativeMethods.VK_RSHIFT)
-                {
-                    _isShiftDown = false;
-                }
-                else if (vk is NativeMethods.VK_MENU or NativeMethods.VK_LMENU or NativeMethods.VK_RMENU)
-                {
-                    _isAltDown = false;
                 }
 
                 if (vk == _targetVk && _suppressNextKeyUp)
@@ -282,6 +333,10 @@ public class HotkeyManager : IDisposable
 
     public void Dispose()
     {
+        _keepAliveTimer.Stop();
+        SystemEvents.SessionSwitch -= OnSessionSwitch;
+        SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+
         Unregister();
         if (_source != null)
         {
