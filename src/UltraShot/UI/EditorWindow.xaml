@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="UltraShot - Screenshot Editor"
         Icon="pack://application:,,,/UltraShot;component/ico/UltraShot.ico"
-        Width="1050" Height="700"
+        Width="1360" Height="860"
+        MinWidth="740" MinHeight="520"
         WindowStartupLocation="CenterScreen"
         Background="#181818"
         Foreground="#EEEEEE"
@@ -17,8 +18,8 @@
             <Setter Property="Foreground" Value="#CCCCCC"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#333337"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="Margin" Value="2,2"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -156,8 +157,8 @@
             <Setter Property="Foreground" Value="#CCCCCC"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#333337"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="Margin" Value="2,2"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -192,10 +193,38 @@
         </Grid.RowDefinitions>
 
         <!-- Top Toolbar -->
-        <Border Grid.Row="0" Background="#202022" BorderBrush="#333337" BorderThickness="0,0,0,1" Padding="10,8">
-            <Grid>
-                <!-- Drawing Tools & Shapes -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+        <Border Grid.Row="0" Background="#202022" BorderBrush="#333337" BorderThickness="0,0,0,1" Padding="10,6">
+            <DockPanel LastChildFill="True">
+                <!-- Actions: Copy, Save As, Save -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="8,0,0,0">
+                    <Button x:Name="ApplyCropBtn" Style="{StaticResource ToolButtonStyle}" Background="#007ACC" Foreground="#FFF" Visibility="Collapsed" Click="ApplyCrop_Click" Margin="0,2,8,2">
+                        <TextBlock Text="✂️ Apply Crop"/>
+                    </Button>
+
+                    <Button Style="{StaticResource ToolButtonStyle}" Click="Copy_Click" ToolTip="Copy to Clipboard">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" Margin="0,0,4,0"/>
+                            <TextBlock Text="Copy"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource ToolButtonStyle}" Click="SaveAs_Click" ToolTip="Save As...">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💾" Margin="0,0,4,0"/>
+                            <TextBlock Text="Save As..."/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource ToolButtonStyle}" Background="#1E7E34" Foreground="#FFF" Click="Save_Click" ToolTip="Update Current File">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✓" Margin="0,0,4,0"/>
+                            <TextBlock Text="Save"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Drawing Tools, Colors & Controls -->
+                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <RadioButton x:Name="PenToolBtn" Style="{StaticResource ToolRadioStyle}" Checked="Tool_Checked">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="✏️" Margin="0,0,4,0"/>
@@ -224,6 +253,13 @@
                         </StackPanel>
                     </RadioButton>
 
+                    <RadioButton x:Name="TextToolBtn" Style="{StaticResource ToolRadioStyle}" Checked="Tool_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="T" FontWeight="Bold" Margin="0,0,4,0"/>
+                            <TextBlock Text="Text"/>
+                        </StackPanel>
+                    </RadioButton>
+
                     <RadioButton x:Name="CropToolBtn" Style="{StaticResource ToolRadioStyle}" Checked="Tool_Checked">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="✂️" Margin="0,0,4,0"/>
@@ -231,24 +267,42 @@
                         </StackPanel>
                     </RadioButton>
 
-                    <Separator Background="#333337" Margin="8,4" Width="1"/>
+                    <RadioButton x:Name="EyedropperToolBtn" Style="{StaticResource ToolRadioStyle}" Checked="Tool_Checked" ToolTip="Pick color from image">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💉" Margin="0,0,4,0"/>
+                            <TextBlock Text="Pick"/>
+                        </StackPanel>
+                    </RadioButton>
 
-                    <!-- Color palette -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
-                        <Button Width="20" Height="20" Background="#FF3B30" BorderThickness="1" BorderBrush="#FFF" Margin="2,0" Click="Color_Click" Tag="#FF3B30" ToolTip="Red"/>
-                        <Button Width="20" Height="20" Background="#FF9500" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#FF9500" ToolTip="Orange"/>
-                        <Button Width="20" Height="20" Background="#FFCC00" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#FFCC00" ToolTip="Yellow"/>
-                        <Button Width="20" Height="20" Background="#34C759" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#34C759" ToolTip="Green"/>
-                        <Button Width="20" Height="20" Background="#007AFF" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#007AFF" ToolTip="Blue"/>
-                        <Button Width="20" Height="20" Background="#AF52DE" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#AF52DE" ToolTip="Purple"/>
-                        <Button Width="20" Height="20" Background="#FFFFFF" BorderThickness="0" Margin="2,0" Click="Color_Click" Tag="#FFFFFF" ToolTip="White"/>
-                        <Button Width="20" Height="20" Background="#000000" BorderThickness="1" BorderBrush="#555" Margin="2,0" Click="Color_Click" Tag="#000000" ToolTip="Black"/>
+                    <Separator Background="#333337" Margin="6,4" Width="1"/>
+
+                    <!-- Color palette + Active + Custom + 3 Recent -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="2,2">
+                        <Button Width="18" Height="18" Background="#FF3B30" BorderThickness="0" Margin="2,0" Cursor="Hand" Click="Color_Click" Tag="#FF3B30" ToolTip="Red"/>
+                        <Button Width="18" Height="18" Background="#FF9500" BorderThickness="0" Margin="2,0" Cursor="Hand" Click="Color_Click" Tag="#FF9500" ToolTip="Orange"/>
+                        <Button Width="18" Height="18" Background="#FFCC00" BorderThickness="0" Margin="2,0" Cursor="Hand" Click="Color_Click" Tag="#FFCC00" ToolTip="Yellow"/>
+                        <Button Width="18" Height="18" Background="#34C759" BorderThickness="0" Margin="2,0" Cursor="Hand" Click="Color_Click" Tag="#34C759" ToolTip="Green"/>
+                        <Button Width="18" Height="18" Background="#007AFF" BorderThickness="0" Margin="2,0" Cursor="Hand" Click="Color_Click" Tag="#007AFF" ToolTip="Blue"/>
+                        <Button Width="18" Height="18" Background="#AF52DE" BorderThickness="0" Margin="2,0" Cursor="Hand" Click="Color_Click" Tag="#AF52DE" ToolTip="Purple"/>
+                        <Button Width="18" Height="18" Background="#FFFFFF" BorderThickness="0" Margin="2,0" Cursor="Hand" Click="Color_Click" Tag="#FFFFFF" ToolTip="White"/>
+                        <Button Width="18" Height="18" Background="#000000" BorderThickness="1" BorderBrush="#555" Margin="2,0" Cursor="Hand" Click="Color_Click" Tag="#000000" ToolTip="Black"/>
+
+                        <Border Width="1" Height="16" Background="#333337" Margin="6,0"/>
+
+                        <Border x:Name="ActiveColorPreview" Width="20" Height="20" Background="#FF3B30" BorderBrush="#FFFFFF" BorderThickness="1.5" CornerRadius="3" Margin="0,0,4,0" ToolTip="Active Color"/>
+                        <Button x:Name="CustomColorBtn" Width="22" Height="20" Background="#2D2D30" Foreground="#EEEEEE" BorderBrush="#555555" BorderThickness="1" Margin="0,0,4,0" Cursor="Hand" Click="CustomColor_Click" ToolTip="Choose Custom Color...">
+                            <TextBlock Text="🎨" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+
+                        <Button x:Name="RecentColorBtn0" Width="18" Height="18" Background="#2D2D30" BorderBrush="#444447" BorderThickness="1" Margin="2,0" Cursor="Hand" Click="Color_Click" IsEnabled="False" Opacity="0.35" ToolTip="Recent Color 1"/>
+                        <Button x:Name="RecentColorBtn1" Width="18" Height="18" Background="#2D2D30" BorderBrush="#444447" BorderThickness="1" Margin="2,0" Cursor="Hand" Click="Color_Click" IsEnabled="False" Opacity="0.35" ToolTip="Recent Color 2"/>
+                        <Button x:Name="RecentColorBtn2" Width="18" Height="18" Background="#2D2D30" BorderBrush="#444447" BorderThickness="1" Margin="2,0" Cursor="Hand" Click="Color_Click" IsEnabled="False" Opacity="0.35" ToolTip="Recent Color 3"/>
                     </StackPanel>
 
                     <!-- Stroke Size -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,2">
                         <TextBlock Text="Width:" Foreground="#888888" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <ComboBox x:Name="StrokeThicknessCombo" SelectionChanged="Thickness_Changed" Width="68">
+                        <ComboBox x:Name="StrokeThicknessCombo" SelectionChanged="Thickness_Changed" Width="64">
                             <ComboBoxItem Content="2 px" Tag="2"/>
                             <ComboBoxItem Content="4 px" Tag="4"/>
                             <ComboBoxItem Content="8 px" Tag="8"/>
@@ -259,41 +313,13 @@
                     <Button Style="{StaticResource ToolButtonStyle}" Click="Undo_Click" ToolTip="Undo (Ctrl+Z)">
                         <TextBlock Text="↩️ Undo"/>
                     </Button>
-                </StackPanel>
-
-                <!-- Actions: Copy, Save As, Save -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="ApplyCropBtn" Style="{StaticResource ToolButtonStyle}" Background="#007ACC" Foreground="#FFF" Visibility="Collapsed" Click="ApplyCrop_Click" Margin="0,0,8,0">
-                        <TextBlock Text="✂️ Apply Crop"/>
-                    </Button>
-
-                    <Button Style="{StaticResource ToolButtonStyle}" Click="Copy_Click" ToolTip="Copy to Clipboard">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📋" Margin="0,0,4,0"/>
-                            <TextBlock Text="Copy"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Style="{StaticResource ToolButtonStyle}" Click="SaveAs_Click" ToolTip="Save As...">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="💾" Margin="0,0,4,0"/>
-                            <TextBlock Text="Save As..."/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Style="{StaticResource ToolButtonStyle}" Background="#1E7E34" Foreground="#FFF" Click="Save_Click" ToolTip="Update Current File">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="✓" Margin="0,0,4,0"/>
-                            <TextBlock Text="Save"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </Grid>
+                </WrapPanel>
+            </DockPanel>
         </Border>
 
-        <!-- Canvas Viewport with ScrollViewer -->
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#121212">
-            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+        <!-- Canvas Viewport with ScrollViewer + Auto-Fit Viewbox -->
+        <ScrollViewer x:Name="CanvasScrollViewer" Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled" Background="#121212">
+            <Viewbox x:Name="CanvasViewbox" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
                 <!-- Outer Border / Shadow for screenshot -->
                 <Border BorderBrush="#333337" BorderThickness="1" CornerRadius="4">
                     <Border.Effect>
@@ -302,28 +328,32 @@
 
                     <Grid x:Name="CanvasContainer" ClipToBounds="True">
                         <!-- Background captured image -->
-                        <Image x:Name="SourceImage" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <Image x:Name="SourceImage" Stretch="None" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
                         <!-- Smooth Freehand Ink Layer -->
                         <InkCanvas x:Name="DrawingInkCanvas" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
-                        <!-- Shapes / Overlay Layer for Arrows, Rectangles, Crop guides -->
+                        <!-- Shapes / Overlay Layer for Arrows, Rectangles, Text, Crop guides -->
                         <Canvas x:Name="ShapesCanvas" Background="Transparent" 
                                 MouseLeftButtonDown="ShapesCanvas_MouseDown"
                                 MouseMove="ShapesCanvas_MouseMove"
                                 MouseLeftButtonUp="ShapesCanvas_MouseUp"/>
                     </Grid>
                 </Border>
-            </Grid>
+            </Viewbox>
         </ScrollViewer>
 
         <!-- Status Bar -->
         <Border Grid.Row="2" Background="#202022" BorderBrush="#333337" BorderThickness="0,1,0,0" Padding="14,6">
             <Grid>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="FilePathStatusText" Text="File:" Foreground="#888888" FontSize="11"/>
-                    <TextBlock Text="  •  " Foreground="#444444" FontSize="11"/>
-                    <TextBlock x:Name="DimensionsStatusText" Text="0 × 0" Foreground="#00D2FF" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="FilePathStatusText" Text="File:" Foreground="#888888" FontSize="11" VerticalAlignment="Center"/>
+                    <TextBlock Text="  •  " Foreground="#444444" FontSize="11" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="DimensionsStatusText" Text="0 × 0" Foreground="#00D2FF" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock Text="  •  " Foreground="#444444" FontSize="11" VerticalAlignment="Center"/>
+                    <Button x:Name="ZoomToggleBtn" Style="{StaticResource ToolButtonStyle}" Padding="6,2" Margin="0" FontSize="11" Click="ZoomToggle_Click" ToolTip="Toggle Fit / 100% View">
+                        <TextBlock x:Name="ZoomToggleText" Text="View: Fit"/>
+                    </Button>
                 </StackPanel>
 
                 <TextBlock x:Name="ToolStatusText" Text="Pen tool active  •  ESC: Exit  •  Ctrl+S: Save  •  Ctrl+C: Copy to Clipboard" 

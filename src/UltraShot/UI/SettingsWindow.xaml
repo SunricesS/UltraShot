@@ -237,7 +237,6 @@
                 <ComboBox x:Name="FormatComboBox" Margin="0,0,0,14" SelectionChanged="FormatComboBox_SelectionChanged">
                     <ComboBoxItem Content="PNG (*.png) - Lossless Clarity (Recommended)" Tag="PNG"/>
                     <ComboBoxItem Content="JPEG (*.jpg) - Compressed / Small File Size" Tag="JPEG"/>
-                    <ComboBoxItem Content="BMP (*.bmp) - Uncompressed Raw Bitmap" Tag="BMP"/>
                 </ComboBox>
 
                 <!-- Advanced Settings Expander -->

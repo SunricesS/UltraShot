@@ -7,7 +7,16 @@ namespace UltraShot.Core;
 
 public static class StorageService
 {
-    public static string GenerateUniqueFilePath()
+    public static string GenerateFileName(string? extension = null, DateTime? timestamp = null)
+    {
+        var ext = string.IsNullOrEmpty(extension)
+            ? SettingsManager.Current.GetFileExtension()
+            : (extension.StartsWith('.') ? extension : $".{extension}");
+        var ts = (timestamp ?? DateTime.Now).ToString("yyyy-MM-dd_HH-mm-ss-fff");
+        return $"UltraShot_{ts}{ext}";
+    }
+
+    public static string GenerateUniqueFilePath(DateTime? timestamp = null)
     {
         var folder = SettingsManager.Current.SaveDirectory;
         if (!Directory.Exists(folder))
@@ -15,22 +24,18 @@ public static class StorageService
             Directory.CreateDirectory(folder);
         }
 
-        var ext = SettingsManager.Current.GetFileExtension();
-        var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-        var fileName = $"UltraShot_{timestamp}{ext}";
-        return Path.Combine(folder, fileName);
+        return Path.Combine(folder, GenerateFileName(timestamp: timestamp));
     }
 
-    public static async Task<string> SaveBitmapAsync(BitmapSource bitmapSource)
+    public static async Task<string> SaveBitmapAsync(BitmapSource bitmapSource, DateTime? timestamp = null)
     {
-        var filePath = GenerateUniqueFilePath();
+        var filePath = GenerateUniqueFilePath(timestamp);
 
         // Encode according to configured image format and quality
         using var memoryStream = new MemoryStream();
         BitmapEncoder encoder = SettingsManager.Current.ImageFormat.ToUpperInvariant() switch
         {
             "JPEG" or "JPG" => new JpegBitmapEncoder { QualityLevel = Math.Clamp(SettingsManager.Current.JpegQuality, 10, 100) },
-            "BMP" => new BmpBitmapEncoder(),
             _ => new PngBitmapEncoder()
         };
 
@@ -54,7 +59,6 @@ public static class StorageService
         BitmapEncoder encoder = ext switch
         {
             ".jpg" or ".jpeg" => new JpegBitmapEncoder { QualityLevel = Math.Clamp(SettingsManager.Current.JpegQuality, 10, 100) },
-            ".bmp" => new BmpBitmapEncoder(),
             _ => new PngBitmapEncoder()
         };
 
@@ -78,7 +82,6 @@ public static class StorageService
                 .GetFiles("*.png")
                 .Concat(new DirectoryInfo(folder).GetFiles("*.jpg"))
                 .Concat(new DirectoryInfo(folder).GetFiles("*.jpeg"))
-                .Concat(new DirectoryInfo(folder).GetFiles("*.bmp"))
                 .OrderByDescending(f => f.CreationTime)
                 .Take(maxCount);
 

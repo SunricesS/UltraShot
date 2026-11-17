@@ -40,11 +40,11 @@ public class AppSettings
 
     public string ImageFormat { get; set; } = "PNG";
     public int JpegQuality { get; set; } = 90;
+    public List<string> RecentColors { get; set; } = [];
 
     public string GetFileExtension() => ImageFormat.ToUpperInvariant() switch
     {
         "JPEG" or "JPG" => ".jpg",
-        "BMP" => ".bmp",
         _ => ".png"
     };
 

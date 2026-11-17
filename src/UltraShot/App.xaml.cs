@@ -18,6 +18,7 @@ public partial class App : Application
     private bool _isCapturing;
     private string? _lastCapturedFilePath;
     private BitmapSource? _lastCapturedBitmap;
+    private DateTime? _lastCapturedAt;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -73,13 +74,14 @@ public partial class App : Application
                 }
                 else if (_lastCapturedBitmap != null)
                 {
-                    OpenEditor(_lastCapturedBitmap);
+                    OpenEditor(_lastCapturedBitmap, _lastCapturedAt);
                 }
             });
         };
         _trayManager.NotificationClosed += () =>
         {
             _lastCapturedBitmap = null;
+            _lastCapturedAt = null;
             TrimMemory();
         };
 
@@ -155,14 +157,16 @@ public partial class App : Application
                 SystemSounds.Asterisk.Play();
             }
 
+            var capturedAt = DateTime.Now;
             string? savedFilePath = null;
             if (!SettingsManager.Current.SaveOnlyToClipboard && SettingsManager.Current.AutoSaveScreenshot)
             {
-                savedFilePath = await StorageService.SaveBitmapAsync(bitmap);
+                savedFilePath = await StorageService.SaveBitmapAsync(bitmap, capturedAt);
             }
 
             _lastCapturedFilePath = savedFilePath;
             _lastCapturedBitmap = bitmap;
+            _lastCapturedAt = capturedAt;
 
             switch (SettingsManager.Current.AfterCaptureBehavior)
             {
@@ -226,11 +230,11 @@ public partial class App : Application
         }
     }
 
-    public void OpenEditor(BitmapSource bitmap)
+    public void OpenEditor(BitmapSource bitmap, DateTime? capturedAt = null)
     {
         try
         {
-            var editor = new EditorWindow(bitmap);
+            var editor = new EditorWindow(bitmap, capturedAt);
             editor.Closed += (s, e) => TrimMemory();
             editor.Show();
             editor.Activate();

@@ -42,7 +42,6 @@ public partial class SettingsWindow : Window
         FormatComboBox.SelectedIndex = settings.ImageFormat.ToUpperInvariant() switch
         {
             "JPEG" or "JPG" => 1,
-            "BMP" => 2,
             _ => 0
         };
 
@@ -116,7 +115,7 @@ public partial class SettingsWindow : Window
         }
         else
         {
-            QualityHintText.Text = "* This setting is only effective when JPEG format is selected. PNG and BMP are lossless formats.";
+            QualityHintText.Text = "* This setting is only effective when JPEG format is selected. PNG is a lossless format.";
             QualityHintText.Foreground = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#666666")!;
         }
     }
