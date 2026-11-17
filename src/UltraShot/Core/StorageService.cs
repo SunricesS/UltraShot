@@ -7,7 +7,16 @@ namespace UltraShot.Core;
 
 public static class StorageService
 {
-    public static string GenerateUniqueFilePath()
+    public static string GenerateFileName(string? extension = null, DateTime? timestamp = null)
+    {
+        var ext = string.IsNullOrEmpty(extension)
+            ? SettingsManager.Current.GetFileExtension()
+            : (extension.StartsWith('.') ? extension : $".{extension}");
+        var ts = (timestamp ?? DateTime.Now).ToString("yyyy-MM-dd_HH-mm-ss-fff");
+        return $"UltraShot_{ts}{ext}";
+    }
+
+    public static string GenerateUniqueFilePath(DateTime? timestamp = null)
     {
         var folder = SettingsManager.Current.SaveDirectory;
         if (!Directory.Exists(folder))
@@ -15,15 +24,12 @@ public static class StorageService
             Directory.CreateDirectory(folder);
         }
 
-        var ext = SettingsManager.Current.GetFileExtension();
-        var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-        var fileName = $"UltraShot_{timestamp}{ext}";
-        return Path.Combine(folder, fileName);
+        return Path.Combine(folder, GenerateFileName(timestamp: timestamp));
     }
 
-    public static async Task<string> SaveBitmapAsync(BitmapSource bitmapSource)
+    public static async Task<string> SaveBitmapAsync(BitmapSource bitmapSource, DateTime? timestamp = null)
     {
-        var filePath = GenerateUniqueFilePath();
+        var filePath = GenerateUniqueFilePath(timestamp);
 
         // Encode according to configured image format and quality
         using var memoryStream = new MemoryStream();
