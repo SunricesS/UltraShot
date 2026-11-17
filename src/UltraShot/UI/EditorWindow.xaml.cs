@@ -61,7 +61,7 @@ public partial class EditorWindow : Window
     private void ApplyWindowDimensions()
     {
         var workArea = SystemParameters.WorkArea;
-        Width = Math.Min(1240, Math.Floor(workArea.Width * 0.92));
+        Width = Math.Min(1360, Math.Floor(workArea.Width * 0.94));
         Height = Math.Min(860, Math.Floor(workArea.Height * 0.92));
         Left = workArea.Left + (workArea.Width - Width) / 2;
         Top = workArea.Top + (workArea.Height - Height) / 2;
@@ -721,11 +721,10 @@ public partial class EditorWindow : Window
 
         var sfd = new SaveFileDialog
         {
-            Filter = "PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg|Bitmap Image (*.bmp)|*.bmp",
+            Filter = "PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg",
             FilterIndex = ext.ToLowerInvariant() switch
             {
                 ".jpg" or ".jpeg" => 2,
-                ".bmp" => 3,
                 _ => 1
             },
             FileName = !string.IsNullOrEmpty(_filePath)

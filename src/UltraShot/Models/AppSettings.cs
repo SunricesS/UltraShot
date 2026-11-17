@@ -45,7 +45,6 @@ public class AppSettings
     public string GetFileExtension() => ImageFormat.ToUpperInvariant() switch
     {
         "JPEG" or "JPG" => ".jpg",
-        "BMP" => ".bmp",
         _ => ".png"
     };
 

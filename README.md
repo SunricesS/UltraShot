@@ -14,7 +14,6 @@ UltraShot is a high-performance, lightweight Windows screenshot tool engineered 
 - ️**Configurable Image Formats & Compression:**
   - **PNG:** Lossless clarity (Default).
   - **JPEG:** High-efficiency compression with customizable quality level (10%–100%) to drastically reduce file sizes.
-  - **BMP:** Uncompressed raw bitmap.
 - 📋 **Temporary Mode (Clipboard-Only):** Toggle to capture temporary screenshots copied only to clipboard without saving files to disk.
 - ⚙️ **Configurable Post-Capture Action:** Choose what happens immediately after taking a screenshot:
   - **Show Recent Screenshots Drawer (Default):** Quick drawer opens at tray with actions to copy, edit, and delete.
@@ -31,7 +30,7 @@ UltraShot is a high-performance, lightweight Windows screenshot tool engineered 
   -  **Rectangle:** Clean boundary box framing.
   -  **Crop:** Re-crop screenshots with real-time dashed guides.
   -  **Undo (Ctrl + Z):** Step-by-step history undo.
-  -  **Save & Save As:** Quickly overwrite or export in PNG, JPEG, or BMP formats.
+  -  **Save & Save As:** Quickly overwrite or export in PNG or JPEG formats.
 -  **Multi-Monitor & DPI Aware:** Full `PerMonitorV2` support across mixed-DPI multi-monitor setups and 4K displays.
 
 ---

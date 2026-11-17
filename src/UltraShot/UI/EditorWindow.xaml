@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="UltraShot - Screenshot Editor"
         Icon="pack://application:,,,/UltraShot;component/ico/UltraShot.ico"
-        Width="1240" Height="860"
+        Width="1360" Height="860"
         MinWidth="740" MinHeight="520"
         WindowStartupLocation="CenterScreen"
         Background="#181818"

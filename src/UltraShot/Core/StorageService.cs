@@ -36,7 +36,6 @@ public static class StorageService
         BitmapEncoder encoder = SettingsManager.Current.ImageFormat.ToUpperInvariant() switch
         {
             "JPEG" or "JPG" => new JpegBitmapEncoder { QualityLevel = Math.Clamp(SettingsManager.Current.JpegQuality, 10, 100) },
-            "BMP" => new BmpBitmapEncoder(),
             _ => new PngBitmapEncoder()
         };
 
@@ -60,7 +59,6 @@ public static class StorageService
         BitmapEncoder encoder = ext switch
         {
             ".jpg" or ".jpeg" => new JpegBitmapEncoder { QualityLevel = Math.Clamp(SettingsManager.Current.JpegQuality, 10, 100) },
-            ".bmp" => new BmpBitmapEncoder(),
             _ => new PngBitmapEncoder()
         };
 
@@ -84,7 +82,6 @@ public static class StorageService
                 .GetFiles("*.png")
                 .Concat(new DirectoryInfo(folder).GetFiles("*.jpg"))
                 .Concat(new DirectoryInfo(folder).GetFiles("*.jpeg"))
-                .Concat(new DirectoryInfo(folder).GetFiles("*.bmp"))
                 .OrderByDescending(f => f.CreationTime)
                 .Take(maxCount);
 
